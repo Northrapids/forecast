@@ -1,0 +1,16 @@
+[ {
+  "id" : "1150511c-25e8-49ab-9467-a4a67b931ec7",
+  "date" : 230821,
+  "hour" : 12,
+  "temperature" : 13.0
+}, {
+  "id" : "2cdb0e7c-4a98-43fd-b260-3140be1c6279",
+  "date" : 230824,
+  "hour" : 14,
+  "temperature" : 22.0
+}, {
+  "id" : "5756c30a-f501-450b-b16c-ceb567023ca4",
+  "date" : 230828,
+  "hour" : 10,
+  "temperature" : 17.0
+} ]
