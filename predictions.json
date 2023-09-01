@@ -2,15 +2,24 @@
   "id" : "1150511c-25e8-49ab-9467-a4a67b931ec7",
   "date" : 230821,
   "hour" : 12,
-  "temperature" : 13.0
+  "temperature" : 13.0,
+  "lastModifiedBy" : null
 }, {
   "id" : "2cdb0e7c-4a98-43fd-b260-3140be1c6279",
-  "date" : 230824,
-  "hour" : 14,
-  "temperature" : 22.0
+  "date" : 0,
+  "hour" : 0,
+  "temperature" : 0.0,
+  "lastModifiedBy" : "Fredrik Nordfors"
 }, {
   "id" : "5756c30a-f501-450b-b16c-ceb567023ca4",
   "date" : 230828,
   "hour" : 10,
-  "temperature" : 17.0
+  "temperature" : 17.0,
+  "lastModifiedBy" : null
+}, {
+  "id" : "438134b9-1580-4773-8f9e-fb2a84d0fa8b",
+  "date" : 230901,
+  "hour" : 15,
+  "temperature" : 12.0,
+  "lastModifiedBy" : null
 } ]

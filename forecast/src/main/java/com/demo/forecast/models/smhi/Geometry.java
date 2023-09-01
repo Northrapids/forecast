@@ -8,18 +8,18 @@ import java.util.ArrayList;
 
 public class Geometry {
 
-    public String type;
-    public ArrayList<ArrayList<Double>> coordinates;
+    private String type;
+    private ArrayList<ArrayList<Double>> coordinates;
 
-    public String getType() {
+    private String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    private void setType(String type) {
         this.type = type;
     }
 
-    public ArrayList<ArrayList<Double>> getCoordinates() {
+    private ArrayList<ArrayList<Double>> getCoordinates() {
         return coordinates;
     }
 
@@ -34,5 +34,6 @@ public class Geometry {
                 ", coordinates=" + coordinates +
                 '}';
     }
+
 
 }

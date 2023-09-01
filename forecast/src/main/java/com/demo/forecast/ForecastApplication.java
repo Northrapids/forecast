@@ -2,8 +2,11 @@ package com.demo.forecast;
 
 import com.demo.forecast.models.Forecast;
 import com.demo.forecast.models.smhi.Parameter;
-import com.demo.forecast.models.smhi.Smhi;
+import com.demo.forecast.models.smhi.SmhiRoot;
 import com.demo.forecast.models.smhi.TimeSeries;
+import com.demo.forecast.models.visual.Day;
+import com.demo.forecast.models.visual.Hour;
+import com.demo.forecast.models.visual.VisualRoot;
 import com.demo.forecast.services.ForecastService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -53,7 +57,7 @@ public class ForecastApplication  implements CommandLineRunner {
 			System.out.println("3. Update");
 			System.out.println("4. Delete");
 			System.out.println("5. Smhi");
-			System.out.println("6. openweathermap");
+			System.out.println("6. Visual");
 			System.out.println("9. Exit");
 			System.out.print("Action:");
 			int sel = scan.nextInt();
@@ -65,6 +69,8 @@ public class ForecastApplication  implements CommandLineRunner {
 				updatePrediction(scan);
 			}else if(sel == 5){
 				smhiData();
+			}else if(sel == 6){
+				visualData();
 			}
 			else if(sel == 9){
 				break;
@@ -77,14 +83,14 @@ public class ForecastApplication  implements CommandLineRunner {
 		var objectMapper = new ObjectMapper();
 
 		// Fetch weather forecast data from the SMHI API
-		Smhi smhi = objectMapper.readValue(new URL
+		SmhiRoot smhiRoot = objectMapper.readValue(new URL
 						("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
-				Smhi.class);
+				SmhiRoot.class);
 
 		System.out.println("+------------------------------------------------------------------------+");
-		System.out.println("approvedTime " + smhi.getApprovedTime());
-		System.out.println("referenceTime " + smhi.getReferenceTime());
-		System.out.println("Location: " + smhi.getGeometry());
+		System.out.println("approvedTime " + smhiRoot.getApprovedTime());
+		System.out.println("referenceTime " + smhiRoot.getReferenceTime());
+		System.out.println("Location: " + smhiRoot.getGeometry());
 		System.out.println("+------------------------------------------------------------------------+");
 
 		// Get the current time in milliseconds
@@ -94,7 +100,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
 
 		// Iterate through the list of time series data
-		for (TimeSeries time : smhi.getTimeSeries()) {
+		for (TimeSeries time : smhiRoot.getTimeSeries()) {
 			long forecastTime = time.getValidTime().toInstant().toEpochMilli();
 
 			// Check if the forecast time is within the next 24 hours from the current time
@@ -124,6 +130,50 @@ public class ForecastApplication  implements CommandLineRunner {
 			}
 		}
 	}
+
+	private void visualData() throws IOException {
+		var objectMapper = new ObjectMapper();
+
+		// Fetch weather forecast data from the visual API
+		VisualRoot visualRoot = objectMapper.readValue(new URL
+						("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Liljeholmstorget%207%2C%20117%2063%20Stockholm/2023-08-31/2024-08-31?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
+				VisualRoot.class);
+
+		System.out.println("+------------------------------------------------------------------------+");
+		System.out.println("Latitude: " + visualRoot.getLatitude());
+		System.out.println("Longitude: " + visualRoot.getLongitude());
+		System.out.println("Address: " + visualRoot.getAddress());
+		System.out.println("+------------------------------------------------------------------------+");
+
+		long currentTimeMillis = System.currentTimeMillis();
+		long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
+
+		for (Day day : visualRoot.getDays()) {
+			Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
+
+			if (dayInstant.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
+				System.out.println("Date: " + day.getDatetime());
+				System.out.println("Temp: " + day.getTemp());
+				System.out.println("Snow: " + day.getSnow());
+				System.out.println("Precipitation Types: " + day.getPreciptype());
+				System.out.println("+----------------------------------------------------+");
+
+				for (Hour hour : day.getHours()) {
+					Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
+
+					if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
+						System.out.println("Hour: " + hour.getDatetime());
+						System.out.println("Temp: " + hour.getTemp());
+						System.out.println("Snow: " + hour.getSnow());
+						System.out.println("Precipitation Types: " + hour.getPreciptype());
+						System.out.println("+----------------------------------------------------+");
+					}
+				}
+			}
+		}
+	}
+
+
 
 	private void openweathermapData() throws IOException {
 

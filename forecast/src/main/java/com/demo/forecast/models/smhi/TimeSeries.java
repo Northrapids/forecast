@@ -5,8 +5,8 @@ import java.util.Date;
 
 public class TimeSeries {
 
-    public Date validTime;
-    public ArrayList<Parameter> parameters;
+    private Date validTime;
+    private ArrayList<Parameter> parameters;
 
     public Date getValidTime() {
         return validTime;

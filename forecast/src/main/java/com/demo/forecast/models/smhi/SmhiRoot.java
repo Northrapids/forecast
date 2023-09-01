@@ -3,12 +3,12 @@ package com.demo.forecast.models.smhi;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Smhi {
+public class SmhiRoot {
 
-    public Date approvedTime;
-    public Date referenceTime;
-    public Geometry geometry;
-    public ArrayList<TimeSeries> timeSeries;
+    private Date approvedTime;
+    private Date referenceTime;
+    private Geometry geometry;
+    private ArrayList<TimeSeries> timeSeries;
 
     public Date getApprovedTime() {
         return approvedTime;

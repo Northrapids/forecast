@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 public class Parameter {
 
-    public String name;
-    public String levelType;
-    public int level;
-    public String unit;
-    public ArrayList<Double> values;
+    private String name;
+    private String levelType;
+    private int level;
+    private String unit;
+    private ArrayList<Double> values;
 
     public String getName() {
         return name;

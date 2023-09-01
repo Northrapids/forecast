@@ -61,9 +61,11 @@ public class ForecastService {
     public List<Forecast> getForecasts(){
         return forecasts;
     }
-    public void add(Forecast forecast) throws IOException {
+    public Forecast add(Forecast forecast) throws IOException {
+        forecast.setId(UUID.randomUUID());
         forecasts.add(forecast);
         writeAllToFile(forecasts);
+        return forecast;
     }
 
     public void delete(UUID id) throws IOException{
@@ -77,10 +79,11 @@ public class ForecastService {
 
     public void update(Forecast forecastFromUser) throws IOException {
         //
-        var foreCastInList = get(forecastFromUser.getId()).get();
-        foreCastInList.setTemperature(forecastFromUser.getTemperature());
-        foreCastInList.setDate(forecastFromUser.getDate());
-        foreCastInList.setHour(forecastFromUser.getHour());
+        var forecastInList = get(forecastFromUser.getId()).get();
+        forecastInList.setTemperature(forecastFromUser.getTemperature());
+        forecastInList.setDate(forecastFromUser.getDate());
+        forecastInList.setHour(forecastFromUser.getHour());
+        forecastInList.setLastModifiedBy(forecastFromUser.getLastModifiedBy());
         writeAllToFile(forecasts);
     }
 
