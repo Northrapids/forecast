@@ -8,7 +8,7 @@ public class SmhiRoot {
     private Date approvedTime;
     private Date referenceTime;
     private Geometry geometry;
-    private ArrayList<TimeSeries> timeSeries;
+    private static ArrayList<TimeSeries> timeSeries;
 
     public Date getApprovedTime() {
         return approvedTime;
@@ -34,7 +34,7 @@ public class SmhiRoot {
         this.geometry = geometry;
     }
 
-    public ArrayList<TimeSeries> getTimeSeries() {
+    public static ArrayList<TimeSeries> getTimeSeries() {
         return timeSeries;
     }
 

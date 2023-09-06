@@ -2,6 +2,7 @@ package com.demo.forecast.controllers;
 
 import com.demo.forecast.dto.ForecastListDTO;
 import com.demo.forecast.dto.NewForecastDTO;
+import com.demo.forecast.models.DataSource;
 import com.demo.forecast.models.Forecast;
 import com.demo.forecast.services.ForecastService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,13 @@ public class ForecastController {
         return new ResponseEntity<List<ForecastListDTO>>(forecastService.getForecasts().stream().map(forecast->{
             var forecastListDTO = new ForecastListDTO();
             forecastListDTO.Id = forecast.getId();
-            forecastListDTO.Date = forecast.getDate();
-            forecastListDTO.Hour = forecast.getHour();
-            forecastListDTO.Temperature = forecast.getTemperature();
+            forecastListDTO.Date = forecast.getPredictionDate();
+            forecastListDTO.Hour = forecast.getPredictionHour();
+            forecastListDTO.Temperature = forecast.getPredictionTemperature();
+            forecastListDTO.dataSource = forecast.getDataSource();
             return forecastListDTO;
         }).collect(Collectors.toList()), HttpStatus.OK);
+
     }
 
     @GetMapping("/api/forecasts/{id}")
@@ -49,13 +52,14 @@ public class ForecastController {
 
     @PutMapping("/api/forecasts/{id}")
     public ResponseEntity<Forecast> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
+
         // mappa från dto -> entitet
         var forecast = new Forecast();
         forecast.setId(id);
-        forecast.setDate(newForecastDTO.getDate());
-        forecast.setHour(newForecastDTO.getHour());
-        forecast.setTemperature(newForecastDTO.getTemperature());
-        forecast.setLastModifiedBy("Fredrik Nordfors");
+        forecast.setPredictionDate(newForecastDTO.getDate());
+        forecast.setPredictionHour(newForecastDTO.getHour());
+        forecast.setPredictionTemperature(newForecastDTO.getTemperature());
+        //forecast.setLastModifiedBy("Fredrik Nordfors");
         forecastService.update(forecast);
         return ResponseEntity.ok(forecast);
     }
@@ -75,11 +79,16 @@ public class ForecastController {
         return ResponseEntity.ok(newCreated);
     }
 
+/*
     @DeleteMapping("/api/forecasts/{id}")
     public ResponseEntity<String> Delete(@PathVariable UUID id ) throws IOException {
         forecastService.delete(id);
         return ResponseEntity.ok("Deleted");
     }
+
+ */
+
+
 
 
 

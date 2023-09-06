@@ -1,17 +1,19 @@
 package com.demo.forecast.dto;
 
+import java.time.LocalDate;
+
 public class NewForecastDTO { // Data transfer object
 
-    private int date; //20230821
+    private LocalDate date; //20230821
     private int hour;
 
     private float temperature;
-    public int getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
     public void setDate(int date) {
-        this.date = date;
+        this.date = LocalDate.ofEpochDay(date);
     }
 
     public int getHour() {
