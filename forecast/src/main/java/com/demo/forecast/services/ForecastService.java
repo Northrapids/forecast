@@ -97,7 +97,8 @@ public class ForecastService {
         //return forecasts.get(i);
     }
 
-    public void update(Forecast forecastFromUser) throws IOException {
+    public void update(Forecast forecast) throws IOException {
+        forecastRepository.save(forecast);
         /*
         var forecastInList = get(forecastFromUser.getId()).get();
         forecastInList.setTemperature(forecastFromUser.getTemperature());
@@ -107,6 +108,13 @@ public class ForecastService {
         writeAllToFile(forecasts);
 
          */
+
+
+    }
+
+    public void delete(UUID id) {
+        forecastRepository.deleteById(id);
+        System.out.println("Deleted");
     }
 
     public Optional<Forecast> get(UUID id) {

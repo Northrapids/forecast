@@ -9,7 +9,7 @@ public class ForecastListDTO {
     public UUID Id;
     public LocalDate Date; //20230821
     public int Hour;
-    public float Temperature;
+    public double Temperature;
     public DataSource dataSource; // API provider
 
 }

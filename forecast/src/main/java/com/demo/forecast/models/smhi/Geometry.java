@@ -19,7 +19,7 @@ public class Geometry {
         this.type = type;
     }
 
-    private ArrayList<ArrayList<Double>> getCoordinates() {
+    public ArrayList<ArrayList<Double>> getCoordinates() {
         return coordinates;
     }
 

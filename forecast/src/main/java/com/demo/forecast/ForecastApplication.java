@@ -6,6 +6,9 @@ import com.demo.forecast.models.smhi.Geometry;
 import com.demo.forecast.models.smhi.Parameter;
 import com.demo.forecast.models.smhi.SmhiRoot;
 import com.demo.forecast.models.smhi.TimeSeries;
+import com.demo.forecast.models.visual.Day;
+import com.demo.forecast.models.visual.Hour;
+import com.demo.forecast.models.visual.VisualRoot;
 import com.demo.forecast.repositories.ForecastRepository;
 import com.demo.forecast.services.ForecastService;
 import com.demo.forecast.services.SMHIService;
@@ -17,10 +20,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+
 
 @SpringBootApplication
 public class ForecastApplication  implements CommandLineRunner {
@@ -41,7 +48,7 @@ public class ForecastApplication  implements CommandLineRunner {
 
 		var objectMapper = new ObjectMapper();
 
-		/*
+        /*
 
 		var forecast = new Forecast();
 		forecast.setId(UUID.randomUUID());
@@ -66,16 +73,20 @@ public class ForecastApplication  implements CommandLineRunner {
 		var scan = new Scanner(System.in);
 
 		while(true){
-			System.out.println("1. List all");
-			System.out.println("2. Create");
-			System.out.println("3. Update");
-			System.out.println("4. Delete");
-			System.out.println("5. Smhi");
-			System.out.println("6. Visual");
-			System.out.println("7. fetch and save to db - smhi");
-			System.out.println("8. Delete all!");
-			System.out.println("9. Exit");
-			System.out.print("Action:");
+			System.out.println("******************* MENU *******************");
+			System.out.println("1. List all forecasts");
+			System.out.println("2. Create a new forecast");
+			System.out.println("3. Update a forecast");
+			System.out.println("4. Delete a forecast");
+			System.out.println("5. View SMHI data");
+			System.out.println("6. View Visual data");
+			System.out.println("7. fetch and save SMHI data to the database");
+			System.out.println("8. Delete all forecasts form database!");
+			System.out.println("9. Auto generate forecasts");
+			System.out.println("10. Exit");
+			System.out.println("*********************************************");
+			System.out.print("Action:\t");
+
 			int sel = scan.nextInt();
 			if(sel == 1){
 				listPredictions();
@@ -92,14 +103,16 @@ public class ForecastApplication  implements CommandLineRunner {
 				fetchAndSaveToDB();
 			}else if(sel == 8){
 				deleteAll();
-			}
-			else if(sel == 9){
+			}else if(sel == 9){
+				//addGeneratedPredictions(forecastService);
+				generatePredictions();
+			} else if(sel == 10){
 				break;
 			}
 		}
 	}
 
-	/*
+    /*
 
 	// old - pre db
 
@@ -152,7 +165,6 @@ public class ForecastApplication  implements CommandLineRunner {
 	}
 
 	*/
-
 
 
 	private void smhiData() throws IOException {
@@ -215,7 +227,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		SmhiRoot smhiRoot = objectMapper.readValue(new URL
 						("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
 				SmhiRoot.class);
-		List<TimeSeries> timeseriesList = SmhiRoot.getTimeSeries(); // getTimeSeries är static i SmhiRoot för att denna ska funka
+		List<TimeSeries> timeseriesList = smhiRoot.getTimeSeries();
 
 		java.util.Date currentTime = new java.util.Date();
 		Calendar calendar = Calendar.getInstance();
@@ -239,30 +251,23 @@ public class ForecastApplication  implements CommandLineRunner {
 
 					Boolean rainOrSnow = false;
 
-					double latitude = 1.0f;
-					double longitude = 1.0f;
+					double latitude = 1.0d;
+					double longitude = 1.0d;
 
 
 					for (Float paramValue : values) {
 						if ("t".equals(paraName) || "pcat".equals(paraName)) {
-							if (paramValue == 3.0 && paramValue == 1) {
+							if (paramValue == 3.0 || paramValue == 1) {
 								rainOrSnow = true;
 							}
 						}
 
-
-
-						/*
-                        Geometry geometry = SmhiRoot.getGeometry();
-                        List<List<Double>> coordinates = geometry.getCoordinates();
-                        for(List<Double> coordinate : coordinates) {
+                        Geometry geometry = smhiRoot.getGeometry();
+                        ArrayList<ArrayList<Double>> coordinates = geometry.getCoordinates();
+                        for(ArrayList<Double> coordinate : coordinates) {
                             latitude = coordinate.get(1);
                             longitude = coordinate.get(0);
                         }
-
-						 */
-
-
 
 						if ("t".equals(paraName)) {
 
@@ -277,8 +282,10 @@ public class ForecastApplication  implements CommandLineRunner {
 							forecastFromSmhi.setPredictionHour(hour);
 							forecastFromSmhi.setDataSource(DataSource.Smhi);
 							forecastFromSmhi.setCreated(LocalDateTime.now());
-							forecastFromSmhi.setLatitude(59.3154f);
-							forecastFromSmhi.setLongitude(18.0382f);
+							forecastFromSmhi.setLatitude(latitude);
+							//forecastFromSmhi.setLatitude(59.3154f);
+							forecastFromSmhi.setLongitude(longitude);
+							//forecastFromSmhi.setLongitude(18.0382f);
 							forecastRepository.save(forecastFromSmhi);
 
 						}
@@ -288,7 +295,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
-	/*
+    /*
 	public void fetchAndSaveToDB() throws IOException {
 		var objectMapper = new ObjectMapper();
 
@@ -352,8 +359,6 @@ public class ForecastApplication  implements CommandLineRunner {
 	 */
 
 
-
-	/*
 	private void visualData() throws IOException {
 		var objectMapper = new ObjectMapper();
 
@@ -396,16 +401,6 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
-	 */
-
-
-/*
-	private void openweathermapData() throws IOException {
-
-	}
-
- */
-
 	private void updatePrediction(Scanner scan) throws IOException {
 		listPredictions();
 		System.out.printf("Ange vilken du vill uppdatera:");
@@ -426,46 +421,83 @@ public class ForecastApplication  implements CommandLineRunner {
 		//Input på dag, hour, temp
 		//Anropa services - Save
 		System.out.println("*** CREATE FORECAST PREDICTION ***");
-		System.out.printf("Date (yyyy mm dd):");
-		int date = scan.nextInt();
-		System.out.print("Hour:");
+
+		System.out.printf("Date (yyyy-mm-dd):\t");
+		String date = scan.next();
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate dateFormatted = LocalDate.parse(date,dateFormatter);
+
+		System.out.print("Hour:\t");
 		int hour = scan.nextInt();
-		System.out.print("Temperature:");
-		int temp = scan.nextInt();
+
+		System.out.print("Temperature:\t");
+		Double temp = scan.nextDouble();
 
 		var forecast = new Forecast();
 		forecast.setId(UUID.randomUUID());
-		forecast.setPredictionDate(LocalDate.now());
-		//forecast.setPredictionDatum2(Instant.now());
+		forecast.setCreated(LocalDateTime.now());
+		forecast.setPredictionDate(LocalDate.from(dateFormatted.atStartOfDay()));
 		forecast.setPredictionHour(hour);
 		forecast.setPredictionTemperature(temp);
 		forecast.setDataSource(DataSource.Console);
 		forecastService.add(forecast);
 
+		System.out.println("*** FORECAST PREDICTION CREATED! ***");
+
 	}
 
+	private void generatePredictions() {
+		System.out.println("*** GENERATE FORECAST PREDICTIONS ***");
+
+		// Get the current date and time
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+		Random random = new Random();
+
+		// Generate and save predictions 24 hours ahead
+		for (int i = 0; i < 25; i++) {
+			LocalDateTime predictionDate = currentDateTime.plusHours(i);
+			int predictionHour = predictionDate.getHour(); // Hour of the prediction
+			double predictionTemp = random.nextDouble(16) + 10; // Generate a random temperature between 10 and 25 Celsius
+
+			var forecast = new Forecast();
+			forecast.setId(UUID.randomUUID());
+			forecast.setCreated(LocalDateTime.now());
+			forecast.setPredictionDate(predictionDate.toLocalDate());
+			forecast.setPredictionHour(predictionHour);
+			forecast.setPredictionTemperature(predictionTemp);
+			forecast.setDataSource(DataSource.ConsoleAutoGenerated);
+			forecastService.add(forecast);
+
+			System.out.println("*** GENERATED FORECAST PREDICTIONS CREATED! ***");
+
+		}
+	}
 
 	private void listPredictions() {
 		int num = 1;
-		/*
+
 		for(var forecast : forecastService.getForecasts()){
 
-			System.out.printf("(%d) %d %d %f %n",
+			System.out.printf("(%d) Created: %s, Updated: %s, Longitude: %f, Latitude: %f, Prediction Date: %s, Prediction Hour: %d, Temperature: %f, Rain/Snow: %b, Data Source: %s%n",
 					num,
-					forecast.getPredictionDatum(),
-					forecast.getPredictionDatum2(),
+					forecast.getCreated(),
+					forecast.getUpdated(),
+					forecast.getLongitude(),
+					forecast.getLatitude(),
+					forecast.getPredictionDate(),
 					forecast.getPredictionHour(),
-					forecast.getPredictionTemperature());
+					forecast.getPredictionTemperature(),
+					forecast.isRainOrSnow(),
+					forecast.getDataSource()
+			);
 			num++;
 		}
 
-		 */
 	}
 
 	public void deleteAll(){
 		forecastRepository.deleteAll();
 	}
-
-
 
 }

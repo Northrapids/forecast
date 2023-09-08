@@ -7,7 +7,7 @@ public class NewForecastDTO { // Data transfer object
     private LocalDate date; //20230821
     private int hour;
 
-    private float temperature;
+    private double temperature;
     public LocalDate getDate() {
         return date;
     }
@@ -24,7 +24,7 @@ public class NewForecastDTO { // Data transfer object
         this.hour = hour;
     }
 
-    public float getTemperature() {
+    public double getTemperature() {
         return temperature;
     }
 

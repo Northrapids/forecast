@@ -41,17 +41,10 @@ public class ForecastController {
         if(forecast.isPresent()) return ResponseEntity.ok(forecast.get());
         return  ResponseEntity.notFound().build();
     }
-    /*
+
 
     @PutMapping("/api/forecasts/{id}")
-    public ResponseEntity<Forecast> Update(@PathVariable UUID id, @RequestBody Forecast forecast) throws IOException {
-        forecastService.update(forecast);
-        return ResponseEntity.ok(forecast);
-    }
-     */
-
-    @PutMapping("/api/forecasts/{id}")
-    public ResponseEntity<Forecast> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
+    public ResponseEntity<NewForecastDTO> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
 
         // mappa från dto -> entitet
         var forecast = new Forecast();
@@ -61,7 +54,7 @@ public class ForecastController {
         forecast.setPredictionTemperature(newForecastDTO.getTemperature());
         //forecast.setLastModifiedBy("Fredrik Nordfors");
         forecastService.update(forecast);
-        return ResponseEntity.ok(forecast);
+        return ResponseEntity.ok(newForecastDTO);
     }
 
     /*
@@ -79,14 +72,14 @@ public class ForecastController {
         return ResponseEntity.ok(newCreated);
     }
 
-/*
+
     @DeleteMapping("/api/forecasts/{id}")
     public ResponseEntity<String> Delete(@PathVariable UUID id ) throws IOException {
         forecastService.delete(id);
         return ResponseEntity.ok("Deleted");
     }
 
- */
+
 
 
 
