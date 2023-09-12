@@ -1,5 +1,6 @@
 package com.demo.forecast.services;
 
+import com.demo.forecast.dto.AverageForecastDTO;
 import com.demo.forecast.models.Forecast;
 import com.demo.forecast.repositories.ForecastRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,10 +12,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 public class ForecastService {
+
+    private static List<Forecast> allForecasts;
 
     @Autowired
     private ForecastRepository forecastRepository;
@@ -61,19 +67,23 @@ public class ForecastService {
 
     private static ObjectMapper getObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        //mapper.registerModule(new JavaTimeModule());
-    /*
-    <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    */
         return mapper;
     }
 
     public ForecastService(){
-        // TODO: 2023-09-05 skriva kod för average 
+
     }
+
+    /*
+    public List<Forecast> Search(LocalDate day, int fromHour, int toHour) {
+        return allForecasts
+                .stream()
+                .filter(forecast ->  forecast.getPredictionDate() == day && forecast.getPredictionHour() >= fromHour && forecast.getPredictionHour() <= toHour )
+                .sorted(Forecast::SORT_HOUR)
+                .toList();
+    }
+
+     */
 
     // new
     public List<Forecast> getForecasts(){
@@ -93,11 +103,13 @@ public class ForecastService {
      */
 
     public Forecast getByIndex(int i) {
-        return null;
-        //return forecasts.get(i);
+        //return null;
+        ///return forecasts.get(i);
+        return forecastRepository.findAll().get(i);
     }
 
     public void update(Forecast forecast) throws IOException {
+        forecast.setUpdated(LocalDateTime.now());
         forecastRepository.save(forecast);
         /*
         var forecastInList = get(forecastFromUser.getId()).get();
@@ -112,14 +124,49 @@ public class ForecastService {
 
     }
 
+    /*
+    public List<AverageForecastDTO> calculateAverage(LocalDate day) {
+        var averageList = new ArrayList<AverageForecastDTO>();
+
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        //String formatDateTime = day.format(formatter);
+        //int dateAsInt = Integer.parseInt(formatDateTime);
+
+        //var allForecastsForDay = forecastRepository.findAllByPredictionDate(dateAsInt);
+
+        var allForecastsForDay = forecastRepository.findAllByPredictionDate(day);
+
+        for (int hour = 0; hour <= 23; hour++) {
+            var averageDto = new AverageForecastDTO();
+            averageDto.setHour(hour);
+            averageDto.setDate(day);
+            float amount = 0;
+            float sum =  0;
+            for (Forecast forecast : allForecastsForDay) {
+                if(forecast.getPredictionHour() == hour){
+                    amount++;
+                    sum += forecast.getPredictionTemperature();
+                }
+            }
+            if (amount >0) {
+                averageDto.setAverage(sum / amount);
+                averageList.add(averageDto);
+            }
+        }
+        return averageList;
+    }
+
+     */
+
     public void delete(UUID id) {
         forecastRepository.deleteById(id);
         System.out.println("Deleted");
     }
 
     public Optional<Forecast> get(UUID id) {
-        return getForecasts().stream().filter(forecast -> forecast.getId().equals(id))
-                .findFirst();
+        return forecastRepository.findById(id);
+        //return getForecasts().stream().filter(forecast -> forecast.getId().equals(id))
+         //       .findFirst();
     }
 
 /*

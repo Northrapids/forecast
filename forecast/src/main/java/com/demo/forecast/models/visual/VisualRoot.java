@@ -4,18 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.ArrayList;
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class VisualRoot {
-    private int queryCost;
-    private double latitude;
-    private double longitude;
-    private String resolvedAddress;
-    private String address;
-    private String timezone;
-    private int tzoffset;
-    private ArrayList<Day> days;
-    private ArrayList<Object> alerts;
-    private CurrentConditions currentConditions;
+    public int queryCost;
+    public double latitude;
+    public double longitude;
+    public String resolvedAddress;
+    public String address;
+    public String timezone;
+    public int tzoffset;
+    public ArrayList<Day> days;
+    public ArrayList<Object> alerts;
+    public CurrentConditions currentConditions;
 
     public int getQueryCost() {
         return queryCost;

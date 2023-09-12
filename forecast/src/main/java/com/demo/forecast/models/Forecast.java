@@ -112,6 +112,10 @@ public class Forecast {
         return dataSource;
     }
 
+    public int SORT_HOUR(Forecast forecast) {
+        return forecast.predictionHour;
+    }
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }

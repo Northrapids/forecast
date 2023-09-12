@@ -1,5 +1,6 @@
 package com.demo.forecast.controllers;
 
+import com.demo.forecast.dto.AverageForecastDTO;
 import com.demo.forecast.dto.ForecastListDTO;
 import com.demo.forecast.dto.NewForecastDTO;
 import com.demo.forecast.models.DataSource;
@@ -11,9 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -79,7 +79,37 @@ public class ForecastController {
         return ResponseEntity.ok("Deleted");
     }
 
+    @GetMapping("/api/forecasts/average/{date}")
+    public ResponseEntity<List<AverageForecastDTO>> averageTemperatureByDate(@PathVariable String date) {
+        List<Forecast> forecasts = forecastService.getForecasts();
+        List<Forecast> averageList = forecasts.stream()
+                .filter(forecast -> forecast.getPredictionDate()
+                        .toString().equals(date))
+                .collect(Collectors.toList());
+        if (averageList.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        Map<Integer,Double>sumOfAverageList = new HashMap<>(); // än
+        Map<Integer,Integer>hourCount = new HashMap<>();
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
 
+        for (Forecast forecast : averageList) {
+            int hour = forecast.getPredictionHour();
+            double temp = forecast.getPredictionTemperature();
+            decimalFormat.format(forecast.getPredictionTemperature());
+
+            sumOfAverageList.put(hour, sumOfAverageList.getOrDefault(hour, 0.0) + temp);
+            hourCount.put(hour, hourCount.getOrDefault(hour, 0) + 1);
+
+        }
+        List<AverageForecastDTO> hourlyAverageTemp = new ArrayList<>();
+
+        for (int hour : sumOfAverageList.keySet()) {
+            double averageTemp = sumOfAverageList.get(hour) / hourCount.get(hour);
+            hourlyAverageTemp.add(new AverageForecastDTO(hour, averageTemp));
+        }
+        return ResponseEntity.ok(hourlyAverageTemp);
+    }
 
 
 

@@ -1,13 +1,19 @@
 package com.demo.forecast.models.visual;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Hour {
-    private String datetime;
-    private int datetimeEpoch;
-    private double temp;
-    private int snow;
-    private ArrayList<String> preciptype;
+    public String datetime;
+    public int datetimeEpoch;
+    public double temp;
+    public int precip;
+    public int precipprob;
+    public int snow;
+    public int snowdepth;
+    public Object preciptype;
 
     public String getDatetime() {
         return datetime;
@@ -33,6 +39,22 @@ public class Hour {
         this.temp = temp;
     }
 
+    public int getPrecip() {
+        return precip;
+    }
+
+    public void setPrecip(int precip) {
+        this.precip = precip;
+    }
+
+    public int getPrecipprob() {
+        return precipprob;
+    }
+
+    public void setPrecipprob(int precipprob) {
+        this.precipprob = precipprob;
+    }
+
     public int getSnow() {
         return snow;
     }
@@ -41,11 +63,19 @@ public class Hour {
         this.snow = snow;
     }
 
-    public ArrayList<String> getPreciptype() {
+    public int getSnowdepth() {
+        return snowdepth;
+    }
+
+    public void setSnowdepth(int snowdepth) {
+        this.snowdepth = snowdepth;
+    }
+
+    public Object getPreciptype() {
         return preciptype;
     }
 
-    public void setPreciptype(ArrayList<String> preciptype) {
+    public void setPreciptype(Object preciptype) {
         this.preciptype = preciptype;
     }
 }

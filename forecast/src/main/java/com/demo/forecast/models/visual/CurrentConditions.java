@@ -1,5 +1,9 @@
 package com.demo.forecast.models.visual;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CurrentConditions {
     private String datetime;
     private int datetimeEpoch;
