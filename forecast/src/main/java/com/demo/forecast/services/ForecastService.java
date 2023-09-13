@@ -1,20 +1,14 @@
 package com.demo.forecast.services;
 
-import com.demo.forecast.dto.AverageForecastDTO;
+import com.demo.forecast.models.DataSource;
 import com.demo.forecast.models.Forecast;
 import com.demo.forecast.repositories.ForecastRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -89,6 +83,14 @@ public class ForecastService {
     public List<Forecast> getForecasts(){
         return forecastRepository.findAll();
     }
+
+    /*
+    public List<Forecast> getForecastsByDataSource(String dataSource) {
+        return forecastRepository.findByDataSource(dataSource);
+        //return forecastRepository.findAll();
+    }
+
+     */
     public Forecast add(Forecast forecast) {
         //forecast.setUpdated();
         forecastRepository.save(forecast);

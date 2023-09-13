@@ -189,6 +189,13 @@ public class ForecastApplication  implements CommandLineRunner {
 		SmhiRoot smhiRoot = objectMapper.readValue(new URL
 						("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
 				SmhiRoot.class);
+
+		System.out.println("+------------------------------------------------------------------------+");
+		System.out.println("approvedTime " + smhiRoot.getApprovedTime());
+		System.out.println("referenceTime " + smhiRoot.getReferenceTime());
+		System.out.println("Location: " + smhiRoot.getGeometry());
+		System.out.println("+------------------------------------------------------------------------+");
+
 		List<TimeSeries> timeseriesList = smhiRoot.getTimeSeries();
 
 		Date currentTime = new Date();

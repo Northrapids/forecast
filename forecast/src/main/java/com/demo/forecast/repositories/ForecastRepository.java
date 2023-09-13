@@ -20,6 +20,9 @@ public interface ForecastRepository extends CrudRepository<Forecast, UUID> {
     @Override
     List<Forecast> findAll();
 
+    //@Override
+    //List<Forecast> findByDataSource(String dataSource);
+
     @Query("SELECT f.predictionDate, f.predictionHour, AVG(f.predictionTemperature) " +
             "FROM Forecast f " +
             "WHERE (f.predictionDate = :predictionDate AND (f.predictionHour <= :currentHour OR :currentHour < 23)) " +
