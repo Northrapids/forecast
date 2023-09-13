@@ -90,21 +90,13 @@ public class ForecastService {
         return forecastRepository.findAll();
     }
     public Forecast add(Forecast forecast) {
+        //forecast.setUpdated();
         forecastRepository.save(forecast);
         return forecast;
     }
-    /*
 
-    public void delete(UUID id) throws IOException{
-        forecasts.removeIf(forecasts -> forecasts.getId().equals(id));
-        writeAllToFile(forecasts);
-    }
-
-     */
 
     public Forecast getByIndex(int i) {
-        //return null;
-        ///return forecasts.get(i);
         return forecastRepository.findAll().get(i);
     }
 
@@ -122,6 +114,19 @@ public class ForecastService {
          */
 
 
+    }
+
+
+
+    public void delete(UUID id) {
+        forecastRepository.deleteById(id);
+        System.out.println("Deleted");
+    }
+
+    public Optional<Forecast> get(UUID id) {
+        return forecastRepository.findById(id);
+        //return getForecasts().stream().filter(forecast -> forecast.getId().equals(id))
+         //       .findFirst();
     }
 
     /*
@@ -157,57 +162,5 @@ public class ForecastService {
     }
 
      */
-
-    public void delete(UUID id) {
-        forecastRepository.deleteById(id);
-        System.out.println("Deleted");
-    }
-
-    public Optional<Forecast> get(UUID id) {
-        return forecastRepository.findById(id);
-        //return getForecasts().stream().filter(forecast -> forecast.getId().equals(id))
-         //       .findFirst();
-    }
-
-/*
-    // old - pre db
-
-    public List<Forecast> getForecasts(){
-        return forecasts;
-    }
-    public Forecast add(Forecast forecast) throws IOException {
-        forecast.setId(UUID.randomUUID());
-        forecasts.add(forecast);
-        writeAllToFile(forecasts);
-        return forecast;
-    }
-
-
-
-    public void delete(UUID id) throws IOException{
-        forecasts.removeIf(forecasts -> forecasts.getId().equals(id));
-        writeAllToFile(forecasts);
-    }
-
-    public Forecast getByIndex(int i) {
-        return forecasts.get(i);
-    }
-
-    public void update(Forecast forecastFromUser) throws IOException {
-        //
-        var forecastInList = get(forecastFromUser.getId()).get();
-        forecastInList.setTemperature(forecastFromUser.getTemperature());
-        forecastInList.setDate(forecastFromUser.getDate());
-        forecastInList.setHour(forecastFromUser.getHour());
-        forecastInList.setLastModifiedBy(forecastFromUser.getLastModifiedBy());
-        writeAllToFile(forecasts);
-    }
-
-    public Optional<Forecast> get(UUID id) {
-        return getForecasts().stream().filter(forecast -> forecast.getId().equals(id))
-                .findFirst();
-    }
-
- */
 
 }

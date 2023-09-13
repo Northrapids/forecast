@@ -79,35 +79,43 @@ public class ForecastApplication  implements CommandLineRunner {
 			System.out.println("2. Create a new forecast");
 			System.out.println("3. Update a forecast");
 			System.out.println("4. Delete a forecast");
-			System.out.println("5. View SMHI data");
-			System.out.println("6. View Visual data");
-			System.out.println("7. fetch and save SMHI data to the database");
-			System.out.println("8. Delete all forecasts form database!");
-			System.out.println("9. Auto generate forecasts");
-			System.out.println("10. fetch and save VISUAL data to the database");
-			System.out.println("20. Exit");
+			System.out.println("5. Auto generate forecasts");
+			System.out.println("6. fetch and save SMHI data to the database");
+			System.out.println("7. fetch and save Visual data to the database");
+			System.out.println("20. EXIT");
 			System.out.println("*********************************************");
 			System.out.print("Action:\t");
 
+
+			//System.out.println("8. Delete all forecasts form database!");
+			//System.out.println("9. Auto generate forecasts");
+			//System.out.println("10. fetch and save VISUAL data to the database");
+			//System.out.println("20. Exit");
+			//System.out.println("*********************************************");
+			//System.out.print("Action:\t");
+
 			int sel = scan.nextInt();
 			if(sel == 1){
-				listPredictions();
+				listAllForecasts();
 			} else if(sel == 2){
-				addPrediction(scan);
+				addForecast(scan);
 			}else if(sel == 3){
-				updatePrediction(scan);
+				updateForecast(scan);
 			}else if(sel == 5){
-				smhiData();
+				//smhiData();
+				generateForecasts();
 			}else if(sel == 6){
-				visualData();
+				//visualData();
+				fetchAndSaveSmhiDataToDB();
 			}else if(sel == 7){
 				// smhiService.fetchAndSaveToDB();
-				fetchAndSaveToDB();
+				//fetchAndSaveSmhiDataToDB();
+				fetchAndSaveVisualDataToDB();
 			}else if(sel == 8){
-				deleteAll();
+				deleteAllForecasts();
 			}else if(sel == 9){
 				//addGeneratedPredictions(forecastService);
-				generatePredictions();
+				generateForecasts();
 			}else if(sel == 10){
 				//fetchVisualAndSaveToDB();
 			}else if(sel == 11){
@@ -118,62 +126,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
-
-    /*
-
-	// old - pre db
-
-	@Override
-	public void run(String... args) throws Exception {
-
-		var objectMapper = new ObjectMapper();
-
-		var forecast = new Forecast();
-		forecast.setId(UUID.randomUUID());
-		forecast.setTemperature(12f);
-		forecast.setDate(20230101);
-		forecast.setHour(12);
-
-
-		String json = objectMapper.writeValueAsString(forecast);
-		System.out.println(json);
-
-
-		Forecast forecast2 = objectMapper.readValue(json,Forecast.class);
-
-
-		var scan = new Scanner(System.in);
-
-		while(true){
-			System.out.println("1. List all");
-			System.out.println("2. Create");
-			System.out.println("3. Update");
-			System.out.println("4. Delete");
-			System.out.println("5. Smhi");
-			System.out.println("6. Visual");
-			System.out.println("9. Exit");
-			System.out.print("Action:");
-			int sel = scan.nextInt();
-			if(sel == 1){
-				listPredictions();
-			} else if(sel == 2){
-				addPrediction(scan);
-			}else if(sel == 3){
-				updatePrediction(scan);
-			}else if(sel == 5){
-				smhiData();
-			}else if(sel == 6){
-				visualData();
-			}
-			else if(sel == 9){
-				break;
-			}
-		}
-	}
-
-	*/
-
-
+/*
 	private void smhiData() throws IOException {
 
 		var objectMapper = new ObjectMapper();
@@ -227,7 +180,9 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
-	public void fetchAndSaveToDB() throws IOException {
+ */
+
+	public void fetchAndSaveSmhiDataToDB() throws IOException {
 		var objectMapper = new ObjectMapper();
 
 		// Fetch weather forecast data from the SMHI API
@@ -278,9 +233,11 @@ public class ForecastApplication  implements CommandLineRunner {
 
 						if ("t".equals(paraName)) {
 
-							System.out.println("tid: " + hour);
-							System.out.println("temp: " + paramValue);
-							System.out.println("tid: " + validLocalDate);
+							System.out.println("----------------------------");
+							System.out.println("date:\t" + validLocalDate);
+							System.out.println("hour:\t" + hour);
+							System.out.println("temp:\t" + paramValue);
+							System.out.println("rain or snow:\t" + rainOrSnow);
 
 							forecastFromSmhi.setId(UUID.randomUUID());
 							forecastFromSmhi.setRainOrSnow(rainOrSnow);
@@ -290,9 +247,7 @@ public class ForecastApplication  implements CommandLineRunner {
 							forecastFromSmhi.setDataSource(DataSource.Smhi);
 							forecastFromSmhi.setCreated(LocalDateTime.now());
 							forecastFromSmhi.setLatitude(latitude);
-							//forecastFromSmhi.setLatitude(59.3154f);
 							forecastFromSmhi.setLongitude(longitude);
-							//forecastFromSmhi.setLongitude(18.0382f);
 							forecastRepository.save(forecastFromSmhi);
 
 						}
@@ -303,7 +258,7 @@ public class ForecastApplication  implements CommandLineRunner {
 	}
 
 
-	private void visualData() throws IOException {
+	private void fetchAndSaveVisualDataToDB() throws IOException {
 		var objectMapper = new ObjectMapper();
 
 		// Fetch weather forecast data from the visual API
@@ -331,17 +286,15 @@ public class ForecastApplication  implements CommandLineRunner {
 				if (hourDatetimeEpoch >= currentTimestamp && hourDatetimeEpoch <= currentTimestamp + 25 * 3600) {
 					String hourDatetime = time.getDatetime();
 					double hourTemp = time.getTemp();
-					System.out.println("*****************************");
+					System.out.println("-----------------------------");
 
-					System.out.println("date " + day.getDatetime());
-					System.out.println("adress " + visualRoot.getAddress());
-					System.out.println("timezone " + visualRoot.getTimezone());
-					System.out.println("The hour is: " + hourDatetime);
-					System.out.println("Visual temp is: " + hourTemp);
-					System.out.println(" regn " + day.getPrecip());
-					System.out.println( "snö " + day.getSnow());
-
-
+					System.out.println("Date:\t" + day.getDatetime());
+					System.out.println("Address:\t" + visualRoot.getAddress());
+					System.out.println("Timezone:\t" + visualRoot.getTimezone());
+					System.out.println("Hour:\t" + hourDatetime);
+					System.out.println("Temp:\t" + hourTemp);
+					//System.out.println("Rain:\t" + day.getPrecip());
+					//System.out.println("Snow:\t" + day.getSnow());
 
 
 					Forecast visualForecast = new Forecast();
@@ -361,13 +314,16 @@ public class ForecastApplication  implements CommandLineRunner {
 
 					if (time.getPrecip() > 0) {
 						visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-						System.out.println("Saved - Precipitation: Rain");
+						//System.out.println("Saved - Precipitation: Rain");
+						System.out.println("Precipitation: Rain");
 					} else if (time.getSnow() > 0) {
 						visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-						System.out.println("Saved - Precipitation: Snow");
+						//System.out.println("Saved - Precipitation: Snow");
+						System.out.println("Precipitation: Snow");
 					} else {
 						visualForecast.setRainOrSnow(false); // No precipitation
-						System.out.println("Saved - Precipitation: None");
+						//System.out.println("Saved - Precipitation: None");
+						System.out.println("Precipitation: None");
 					}
 
 					visualForecast.setPredictionDate(parsedDate);
@@ -379,15 +335,15 @@ public class ForecastApplication  implements CommandLineRunner {
 					//visualForecast.setDataSource(DataSource.Visual);
 
 
-
-
 					forecastRepository.save(visualForecast);
 
 				}
 			}
 		}
+		System.out.println("\n**************** COMPLETED! ****************\n");
 
-		/*
+
+        /*
 
 		System.out.println("+------------------------------------------------------------------------+");
 		System.out.println("Latitude: " + visualRoot.getLatitude());
@@ -438,7 +394,7 @@ public class ForecastApplication  implements CommandLineRunner {
 
 	}
 
-	/*
+    /*
     public void fetchVisualAndSaveToDB() throws IOException {
         var objectMapper = new ObjectMapper();
 
@@ -489,7 +445,7 @@ public class ForecastApplication  implements CommandLineRunner {
     }
 
      */
-	/*
+    /*
 	public void fetchVisualAndSaveToDB() throws IOException {
 		var objectMapper = new ObjectMapper();
 
@@ -568,11 +524,8 @@ public class ForecastApplication  implements CommandLineRunner {
 	 */
 
 
-
-
-
-		// Create a Calendar instance and set it to the current time
-		/*
+	// Create a Calendar instance and set it to the current time
+        /*
 		Calendar calendar = Calendar.getInstance();
 		long currentTimeMillis = System.currentTimeMillis();
 		calendar.setTimeInMillis(currentTimeMillis);
@@ -582,7 +535,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		long tomorrowMillis = calendar.getTimeInMillis();
 		*/
 
-	/*
+    /*
 
 		// Iterate over the data and save forecasts
 		for (Day day : visualRoot.getDays()) {
@@ -622,8 +575,8 @@ public class ForecastApplication  implements CommandLineRunner {
 
 	 */
 
-	private void updatePrediction(Scanner scan) throws IOException {
-		listPredictions();
+	private void updateForecast(Scanner scan) throws IOException {
+		listAllForecasts();
 		System.out.println("\n------------------------------");
 		System.out.printf("Ange vilken du vill uppdatera:\t");
 		int num = scan.nextInt() ;
@@ -642,7 +595,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		forecastService.update(forecast);
 	}
 
-	private void addPrediction(Scanner scan) throws IOException {
+	private void addForecast(Scanner scan) throws IOException {
 		//Input på dag, hour, temp
 		//Anropa services - Save
 		System.out.println("*** CREATE FORECAST PREDICTION ***");
@@ -671,7 +624,7 @@ public class ForecastApplication  implements CommandLineRunner {
 
 	}
 
-	private void generatePredictions() {
+	private void generateForecasts() {
 		System.out.println("*** GENERATE FORECAST PREDICTIONS ***");
 
 		// Get the current date and time
@@ -699,7 +652,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
-	private void listPredictions() {
+	private void listAllForecasts() {
 		int num = 1;
 
 		for(var forecast : forecastService.getForecasts()){
@@ -726,7 +679,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		//List<AverageForecastDTO> dtos = forecastService.calculateAverage(day);
 	}
 
-	public void deleteAll(){
+	public void deleteAllForecasts(){
 		forecastRepository.deleteAll();
 	}
 

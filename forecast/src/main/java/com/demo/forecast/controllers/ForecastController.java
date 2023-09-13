@@ -5,14 +5,18 @@ import com.demo.forecast.dto.ForecastListDTO;
 import com.demo.forecast.dto.NewForecastDTO;
 import com.demo.forecast.models.DataSource;
 import com.demo.forecast.models.Forecast;
+import com.demo.forecast.repositories.ForecastRepository;
 import com.demo.forecast.services.ForecastService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,8 @@ public class ForecastController {
 
     @Autowired
     private ForecastService forecastService;
+    @Autowired
+    private ForecastRepository forecastRepository;
     @GetMapping("/api/forecasts")
     public ResponseEntity<List<ForecastListDTO>> getAll(){
         return new ResponseEntity<List<ForecastListDTO>>(forecastService.getForecasts().stream().map(forecast->{
@@ -109,6 +115,35 @@ public class ForecastController {
             hourlyAverageTemp.add(new AverageForecastDTO(hour, averageTemp));
         }
         return ResponseEntity.ok(hourlyAverageTemp);
+    }
+
+    @GetMapping("/api/forecasts/{provider}/avaragetemp/{predictionDate}")
+    public ResponseEntity<List<HashMap<String, Object>>> getAverageTemperaturePerHour(
+            @PathVariable("predictionDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+            @PathVariable("provider") DataSource providerName) {
+
+        LocalTime currentTime = LocalTime.now();
+        int currentHour = currentTime.getHour();
+
+        List<Object[]> averageTemp = forecastRepository.findAllByAverageTempByProvider(date, currentHour, providerName);
+
+        if (averageTemp.isEmpty()) {
+            // Handle the case where no predictions are available for the given provider
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // You can choose an appropriate status code
+        }
+
+        // Convert List<Object[]> to List<HashMap<String, Object>>
+        List<HashMap<String, Object>> result = new ArrayList<>();
+
+        for (Object[] avarageTempbyprovider : averageTemp) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("date", avarageTempbyprovider[0]);
+            map.put("hour", avarageTempbyprovider[1]);
+            map.put("avgTemp", avarageTempbyprovider[2]);
+            result.add(map);
+        }
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 
