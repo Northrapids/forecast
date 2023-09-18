@@ -1,6 +1,5 @@
 package com.demo.forecast;
 
-import com.demo.forecast.dto.AverageForecastDTO;
 import com.demo.forecast.models.DataSource;
 import com.demo.forecast.models.Forecast;
 import com.demo.forecast.models.smhi.Geometry;
@@ -12,7 +11,8 @@ import com.demo.forecast.models.visual.Hour;
 import com.demo.forecast.models.visual.VisualRoot;
 import com.demo.forecast.repositories.ForecastRepository;
 import com.demo.forecast.services.ForecastService;
-import com.demo.forecast.services.SMHIService;
+import com.demo.forecast.services.SmhiService;
+import com.demo.forecast.services.VisualService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -36,7 +35,9 @@ public class ForecastApplication  implements CommandLineRunner {
 	@Autowired
 	private ForecastService forecastService;
 	@Autowired
-	private SMHIService smhiService;
+	private SmhiService smhiService;
+	@Autowired
+	private VisualService visualService;
 	@Autowired
 	private ForecastRepository forecastRepository;
 
@@ -48,28 +49,6 @@ public class ForecastApplication  implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 
 		var objectMapper = new ObjectMapper();
-
-        /*
-
-		var forecast = new Forecast();
-		forecast.setId(UUID.randomUUID());
-		forecast.setPredictionTemperature(12);
-		forecast.setPredictionDatum(LocalDate.now());
-		forecast.setPredictionDatum2(Instant.now());
-		forecast.setPredictionHour(12);
-		forecast.setDataSource(DataSource.Console);
-
-
-
-
-		String json = objectMapper.writeValueAsString(forecast);
-		System.out.println(json);
-
-		 */
-
-
-		// Forecast forecast2 = objectMapper.readValue(json,Forecast.class);
-
 
 		var scan = new Scanner(System.in);
 
@@ -98,7 +77,7 @@ public class ForecastApplication  implements CommandLineRunner {
 			if(sel == 1){
 				listAllForecasts();
 			} else if(sel == 2){
-				addForecast(scan);
+				createForecast(scan);
 			}else if(sel == 3){
 				updateForecast(scan);
 			}else if(sel == 5){
@@ -106,13 +85,13 @@ public class ForecastApplication  implements CommandLineRunner {
 				generateForecasts();
 			}else if(sel == 6){
 				//visualData();
-				fetchAndSaveSmhiDataToDB();
-			}else if(sel == 7){
-				// smhiService.fetchAndSaveToDB();
 				//fetchAndSaveSmhiDataToDB();
-				fetchAndSaveVisualDataToDB();
+				smhiService.fetchAndSaveSmhiDataToDB();
+			}else if(sel == 7){
+				//fetchAndSaveVisualDataToDB();
+				visualService.fetchAndSaveVisualDataToDB();
 			}else if(sel == 8){
-				deleteAllForecasts();
+				deleteAllForecasts(scan);
 			}else if(sel == 9){
 				//addGeneratedPredictions(forecastService);
 				generateForecasts();
@@ -583,6 +562,11 @@ public class ForecastApplication  implements CommandLineRunner {
 	 */
 
 	private void updateForecast(Scanner scan) throws IOException {
+		if (forecastService.getForecasts().isEmpty()) {
+			System.out.println("\nThere are no forecasts to update!\n");
+			return;
+		}
+
 		listAllForecasts();
 		System.out.println("\n------------------------------");
 		System.out.printf("Ange vilken du vill uppdatera:\t");
@@ -597,35 +581,78 @@ public class ForecastApplication  implements CommandLineRunner {
 		);
 		System.out.println("-------------------------------------------------");
 		System.out.printf("Ange ny temp:\t");
-		int temp = scan.nextInt() ;
+		double temp = scan.nextDouble() ;
 		forecast.setPredictionTemperature(temp);
 		forecastService.update(forecast);
 	}
 
-	private void addForecast(Scanner scan) throws IOException {
-		//Input på dag, hour, temp
-		//Anropa services - Save
+
+	public  static String longitude=" 18.02151508449004";
+	public static  String latitude ="59.30996552541549";
+
+
+	private void createForecast(Scanner scan) throws IOException {
+
 		System.out.println("*** CREATE FORECAST PREDICTION ***");
 
-		System.out.printf("Date (yyyy-mm-dd):\t");
-		String date = scan.next();
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate dateFormatted = LocalDate.parse(date,dateFormatter);
+
+		//System.out.printf("Date (yyyy-mm-dd):\t");
+		LocalDate date = null;
+		boolean validDate = false;
+		while (!validDate) {
+			try {
+				System.out.println("Date (yyyy-MM-dd):\t");
+				String dateInput = scan.next();
+
+				date = LocalDate.parse(dateInput,dateFormatter);
+				validDate = true;
+			} catch (Exception e) {
+				System.out.println("Invalid input!");
+				scan.next();
+			}
+		}
+		//String date = scan.next();
+		//DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		//LocalDate dateFormatted = LocalDate.parse(date,dateFormatter);
 
 		System.out.print("Hour:\t");
-		int hour = scan.nextInt();
+		int hour = 0;
+		boolean validHour = false;
+		while(!validHour) {
+			try {
+				hour = scan.nextInt();
+				validHour = true;
+			} catch (Exception e){
+				System.out.println("Invalid input!");
+				scan.next();
+			}
+		}
 
 		System.out.print("Temperature:\t");
-		Double temp = scan.nextDouble();
+		double temp = 0;
+		//Double temp = scan.nextDouble();
+		boolean validTemperature = false;
+		while (!validTemperature) {
+			try {
+				temp = scan.nextDouble();
+				validTemperature = true;
+			} catch (Exception e) {
+				System.out.println("Invalid input!");
+				scan.next();
+			}
+		}
 
 		var forecast = new Forecast();
 		forecast.setId(UUID.randomUUID());
 		forecast.setCreated(LocalDateTime.now());
-		forecast.setPredictionDate(LocalDate.from(dateFormatted.atStartOfDay()));
+		forecast.setPredictionDate(LocalDate.from(date.atStartOfDay()));
 		forecast.setPredictionHour(hour);
 		forecast.setPredictionTemperature(temp);
 		forecast.setDataSource(DataSource.Console);
-		forecastService.add(forecast);
+		forecast.setLatitude(Double.parseDouble(latitude));
+		forecast.setLongitude(Double.parseDouble(longitude));
+		forecastService.create(forecast);
 
 		System.out.println("*** FORECAST PREDICTION CREATED! ***");
 
@@ -643,7 +670,10 @@ public class ForecastApplication  implements CommandLineRunner {
 		for (int i = 0; i < 25; i++) {
 			LocalDateTime predictionDate = currentDateTime.plusHours(i);
 			int predictionHour = predictionDate.getHour(); // Hour of the prediction
-			double predictionTemp = random.nextDouble(16) + 10; // Generate a random temperature between 10 and 25 Celsius
+			double predictionTemp = random.nextDouble(16) + 10; // Generate a random temperature between 10 and 25 C
+
+			// Simulate a 15% to 35% chance of rain or snow
+			boolean rainOrSnow = random.nextDouble() <= 0.35 && random.nextDouble() >= 0.15;
 
 			var forecast = new Forecast();
 			forecast.setId(UUID.randomUUID());
@@ -651,18 +681,28 @@ public class ForecastApplication  implements CommandLineRunner {
 			forecast.setPredictionDate(predictionDate.toLocalDate());
 			forecast.setPredictionHour(predictionHour);
 			forecast.setPredictionTemperature(predictionTemp);
+			forecast.setRainOrSnow(rainOrSnow);
 			forecast.setDataSource(DataSource.ConsoleAutoGenerated);
-			forecastService.add(forecast);
+			forecastService.create(forecast);
 
-			System.out.println("*** GENERATED FORECAST PREDICTIONS CREATED! ***");
 
 		}
+		System.out.println("*** GENERATED FORECAST PREDICTIONS CREATED! ***");
 	}
 
 	private void listAllForecasts() {
+
+		List<Forecast> forecasts = forecastService.getForecasts();
+
+		if (forecasts.isEmpty()) {
+			System.out.println("\nList is empty!\n");
+			return;
+		}
+
 		int num = 1;
 
-		for(var forecast : forecastService.getForecasts()){
+		//for(var forecast : forecastService.getForecasts()){
+		for (var forecast : forecasts) {
 
 			System.out.printf("(%d) Created: %s, Updated: %s, Longitude: %f, Latitude: %f, Prediction Date: %s, Prediction Hour: %d, Temperature: %f, Rain/Snow: %b, Data Source: %s%n",
 					num,
@@ -686,8 +726,20 @@ public class ForecastApplication  implements CommandLineRunner {
 		//List<AverageForecastDTO> dtos = forecastService.calculateAverage(day);
 	}
 
-	public void deleteAllForecasts(){
-		forecastRepository.deleteAll();
+	private void deleteAllForecasts(Scanner scan){
+		//forecastRepository.deleteAll();
+		System.out.println("Are you sure you want to delete all forecasts? (Y/N)");
+		System.out.printf("Action:\t");
+		String confirmation = scan.next().toLowerCase();
+
+		if (confirmation.equals("y")) {
+			forecastRepository.deleteAll();
+			System.out.println("All forecasts have been deleted.");
+		} else if (confirmation.equals("n")) {
+			System.out.println("Deletion canceled. No forecasts were deleted.");
+		} else {
+			System.out.println("Invalid input. Deletion canceled. No forecasts were deleted.");
+		}
 	}
 
 }

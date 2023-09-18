@@ -54,11 +54,12 @@ public class ForecastController {
     public ResponseEntity<NewForecastDTO> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
 
         // mappa från dto -> entitet
-        var forecast = new Forecast();
-        forecast.setId(id);
-        forecast.setPredictionDate(newForecastDTO.getDate());
-        forecast.setPredictionHour(newForecastDTO.getHour());
-        forecast.setPredictionTemperature(newForecastDTO.getTemperature());
+        //var forecast = new Forecast();
+        var forecast = forecastService.get(id).get(); // hämta objektet från databas = Alla properties sätts
+        //forecast.setId(id);
+        forecast.setPredictionDate(newForecastDTO.getPredictionDate());
+        forecast.setPredictionHour(newForecastDTO.getPredictionHour());
+        forecast.setPredictionTemperature(newForecastDTO.getPredictionTemperature());
         //forecast.setLastModifiedBy("Fredrik Nordfors");
         forecastService.update(forecast);
         return ResponseEntity.ok(newForecastDTO);
@@ -75,7 +76,7 @@ public class ForecastController {
 
     @PostMapping("/api/forecasts")
     public ResponseEntity<Forecast> newForecast(@RequestBody Forecast forecast) throws IOException {
-        var newCreated = forecastService.add(forecast);
+        var newCreated = forecastService.create(forecast);
         return ResponseEntity.ok(newCreated);
     }
 
@@ -175,7 +176,7 @@ public class ForecastController {
 
 
 
-
+/*
 
     // GetMapping for Query
     @GetMapping("/api/forecasts/{provider}/avaragetemp/{predictionDate}")
@@ -206,6 +207,8 @@ public class ForecastController {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+ */
 
 }
 

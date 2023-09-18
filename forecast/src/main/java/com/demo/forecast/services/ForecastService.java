@@ -20,43 +20,6 @@ public class ForecastService {
     private ForecastRepository forecastRepository;
     //private static List<Forecast> forecasts = new ArrayList<>();
 
-    /*
-
-    public ForecastService(){
-        try {
-            forecasts = readFromFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-     */
-    /*
-    private List<Forecast> readFromFile() throws IOException {
-        if(!Files.exists(Path.of("predictions.json"))) return new ArrayList<Forecast>();
-        ObjectMapper objectMapper = getObjectMapper();
-        var jsonStr = Files.readString(Path.of("predictions.json"));
-        return  new ArrayList(Arrays.asList(objectMapper.readValue(jsonStr, Forecast[].class ) ));
-    }
-    */
-
-    /*
-
-// kommer inte användas något mera?
-    private void writeAllToFile(List<Forecast> weatherPredictions) throws IOException {
-        ObjectMapper objectMapper = getObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-
-
-        StringWriter stringWriter = new StringWriter();
-        objectMapper.writeValue(stringWriter, weatherPredictions);
-
-        Files.writeString(Path.of("predictions.json"), stringWriter.toString());
-
-    }
-
-     */
 
 
     private static ObjectMapper getObjectMapper() {
@@ -91,7 +54,7 @@ public class ForecastService {
     }
 
      */
-    public Forecast add(Forecast forecast) {
+    public Forecast create(Forecast forecast) {
         //forecast.setUpdated();
         forecastRepository.save(forecast);
         return forecast;
@@ -105,17 +68,6 @@ public class ForecastService {
     public void update(Forecast forecast) throws IOException {
         forecast.setUpdated(LocalDateTime.now());
         forecastRepository.save(forecast);
-        /*
-        var forecastInList = get(forecastFromUser.getId()).get();
-        forecastInList.setTemperature(forecastFromUser.getTemperature());
-        forecastInList.setDate(forecastFromUser.getDate());
-        forecastInList.setHour(forecastFromUser.getHour());
-        forecastInList.setLastModifiedBy(forecastFromUser.getLastModifiedBy());
-        writeAllToFile(forecasts);
-
-         */
-
-
     }
 
 

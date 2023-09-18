@@ -4,31 +4,31 @@ import java.time.LocalDate;
 
 public class NewForecastDTO { // Data transfer object
 
-    private LocalDate date; //20230821
-    private int hour;
+    private LocalDate predictionDate; //20230821
+    private int predictionHour;
 
-    private double temperature;
-    public LocalDate getDate() {
-        return date;
+    private double predictionTemperature;
+    public LocalDate getPredictionDate() {
+        return predictionDate;
     }
 
-    public void setDate(int date) {
-        this.date = LocalDate.ofEpochDay(date);
+    public void setPredictionDate(LocalDate date) {
+        this.predictionDate = (date);
     }
 
-    public int getHour() {
-        return hour;
+    public int getPredictionHour() {
+        return predictionHour;
     }
 
-    public void setHour(int hour) {
-        this.hour = hour;
+    public void setPredictionHour(int hour) {
+        this.predictionHour = hour;
     }
 
-    public double getTemperature() {
-        return temperature;
+    public double getPredictionTemperature() {
+        return predictionTemperature;
     }
 
-    public void setTemperature(float temperature) {
-        this.temperature = temperature;
+    public void setPredictionTemperature(float temperature) {
+        this.predictionTemperature = temperature;
     }
 }
