@@ -31,29 +31,12 @@ public class ForecastService {
 
     }
 
-    /*
-    public List<Forecast> Search(LocalDate day, int fromHour, int toHour) {
-        return allForecasts
-                .stream()
-                .filter(forecast ->  forecast.getPredictionDate() == day && forecast.getPredictionHour() >= fromHour && forecast.getPredictionHour() <= toHour )
-                .sorted(Forecast::SORT_HOUR)
-                .toList();
-    }
-
-     */
-
     // new
     public List<Forecast> getForecasts(){
         return forecastRepository.findAll();
     }
 
-    /*
-    public List<Forecast> getForecastsByDataSource(String dataSource) {
-        return forecastRepository.findByDataSource(dataSource);
-        //return forecastRepository.findAll();
-    }
 
-     */
     public Forecast create(Forecast forecast) {
         //forecast.setUpdated();
         forecastRepository.save(forecast);
@@ -69,8 +52,6 @@ public class ForecastService {
         forecast.setUpdated(LocalDateTime.now());
         forecastRepository.save(forecast);
     }
-
-
 
     public void delete(UUID id) {
         forecastRepository.deleteById(id);

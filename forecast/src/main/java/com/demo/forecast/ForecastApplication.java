@@ -53,17 +53,7 @@ public class ForecastApplication  implements CommandLineRunner {
 		var scan = new Scanner(System.in);
 
 		while(true){
-			System.out.println("******************* MENU *******************");
-			System.out.println(" 1. List all forecasts");
-			System.out.println(" 2. Create a new forecast");
-			System.out.println(" 3. Update a forecast");
-			System.out.println(" 4. Delete a forecast");
-			System.out.println(" 5. Auto generate forecasts");
-			System.out.println(" 6. fetch and save SMHI data to the database");
-			System.out.println(" 7. fetch and save Visual data to the database");
-			System.out.println("20. EXIT");
-			System.out.println("*********************************************");
-			System.out.print("Action:\t");
+			menu();
 
 			int sel = scan.nextInt();
 			if(sel == 1){
@@ -73,72 +63,34 @@ public class ForecastApplication  implements CommandLineRunner {
 			} else if(sel == 3){
 				updateForecast(scan);
 			} else if(sel == 4){
-				deleteAllForecasts(scan);
+				deleteForecastById(scan);
 			} else if(sel == 5){
 				generateForecasts();
 			} else if(sel == 6){
 				smhiService.fetchAndSaveSmhiDataToDB();
 			} else if(sel == 7) {
 				visualService.fetchAndSaveVisualDataToDB();
+			} else if (sel == 8) {
+				deleteAllForecasts(scan);
 			} else if(sel == 20){
 				break;
-			} else if(sel == 9){
-				smhiData();
 			}
 		}
 	}
 
-	private void smhiData() throws IOException {
-
-		var objectMapper = new ObjectMapper();
-
-		// Fetch weather forecast data from the SMHI API
-		SmhiRoot smhiRoot = objectMapper.readValue(new URL
-						("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
-				SmhiRoot.class);
-
-		System.out.println("+------------------------------------------------------------------------+");
-		System.out.println("approvedTime " + smhiRoot.getApprovedTime());
-		System.out.println("referenceTime " + smhiRoot.getReferenceTime());
-		System.out.println("Location: " + smhiRoot.getGeometry());
-		System.out.println("+------------------------------------------------------------------------+");
-
-		// Get the current time in milliseconds
-		long currentTime = System.currentTimeMillis();
-
-		// Calculate the duration of 24 hours in milliseconds
-		long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
-
-		// Iterate through the list of time series data
-		for (TimeSeries time : smhiRoot.getTimeSeries()) {
-			long forecastTime = time.getValidTime().toInstant().toEpochMilli();
-
-			// Check if the forecast time is within the next 24 hours from the current time
-			if (forecastTime > currentTime && forecastTime <= currentTime + twentyFourHoursInMillis) {
-				System.out.println("validtime: " + time.getValidTime() + "\n");
-
-				// Iterate through parameter data for the current time series
-				for (Parameter parameter : time.getParameters()) {
-					String paramName = parameter.getName();
-					if (paramName.equals("t") || paramName.equals("pcat")) {
-						System.out.println("name: " + paramName);
-						System.out.println("level type: " + parameter.getLevelType());
-						System.out.println("level: " + parameter.getLevel());
-						System.out.println("unit:" + parameter.getUnit());
-						System.out.println("values: " + parameter.getValues());
-
-					}
-
-				}
-				System.out.println("+----------------------------------------------------+");
-
-			}
-
-			// Break the loop once data for the next 24 hours has been processed
-			if (forecastTime > currentTime + twentyFourHoursInMillis) {
-				break;
-			}
-		}
+	private void menu() {
+		System.out.println("******************* MENU *******************");
+		System.out.println(" 1. List all forecasts");
+		System.out.println(" 2. Create a new forecast");
+		System.out.println(" 3. Update a forecast");
+		System.out.println(" 4. Delete a forecast");
+		System.out.println(" 5. Auto generate forecasts");
+		System.out.println(" 6. fetch and save SMHI data to the database");
+		System.out.println(" 7. fetch and save Visual data to the database");
+		System.out.println(" 8. Delete all forecasts");
+		System.out.println("20. EXIT");
+		System.out.println("*********************************************");
+		System.out.print("Action:\t");
 	}
 
 
@@ -154,8 +106,9 @@ public class ForecastApplication  implements CommandLineRunner {
 		int num = scan.nextInt() ;
 		var forecast = forecastService.getByIndex(num-1);
 		System.out.println("-------------------------------------------------");
-		System.out.printf("INDEX: %d DATE: %s HOUR: %d CURRENT TEMP: %f %n",
+		System.out.printf("INDEX: %d ID:%s DATE: %s HOUR: %d CURRENT TEMP: %f %n",
 				num,
+				forecast.getId(),
 				forecast.getPredictionDate(),
 				forecast.getPredictionHour(),
 				forecast.getPredictionTemperature()
@@ -165,6 +118,15 @@ public class ForecastApplication  implements CommandLineRunner {
 		double temp = scan.nextDouble() ;
 		forecast.setPredictionTemperature(temp);
 		forecastService.update(forecast);
+	}
+
+	private void deleteForecastById(Scanner scan) {
+		listAllForecasts();
+		System.out.print("Enter the ID of the forecast to delete: ");
+		UUID id = UUID.fromString(scan.next());
+
+		forecastService.delete(id);
+		System.out.println("Forecast with ID " + id + " has been deleted.");
 	}
 
 
@@ -267,8 +229,9 @@ public class ForecastApplication  implements CommandLineRunner {
 
 		for (var forecast : forecasts) {
 
-			System.out.printf("(%d) Created: %s, Updated: %s, Longitude: %f, Latitude: %f, Prediction Date: %s, Prediction Hour: %d, Temperature: %f, Rain/Snow: %b, Data Source: %s%n",
+			System.out.printf("(%d) Id:%s Created: %s, Updated: %s, Longitude: %f, Latitude: %f, Prediction Date: %s, Prediction Hour: %d, Temperature: %f, Rain/Snow: %b, Data Source: %s%n",
 					num,
+					forecast.getId(),
 					forecast.getCreated(),
 					forecast.getUpdated(),
 					forecast.getLongitude(),
@@ -299,5 +262,8 @@ public class ForecastApplication  implements CommandLineRunner {
 			System.out.println("Invalid input. Deletion canceled. No forecasts were deleted.");
 		}
 	}
+
+
+
 
 }

@@ -80,21 +80,28 @@ public class SmhiService {
                                 latitude = coordinate.get(1);
                                 longitude = coordinate.get(0);
                             }
-                            System.out.println("----------------------------");
+
                             forecastFromSmhi.setId(UUID.randomUUID());
                             System.out.println("id:\t" + UUID.randomUUID());
+
                             forecastFromSmhi.setPredictionDate(validLocalDate);
                             System.out.println("date:\t" + validLocalDate);
+
                             forecastFromSmhi.setPredictionHour(hour);
                             System.out.println("hour:\t" + hour);
+
                             forecastFromSmhi.setPredictionTemperature(paramValue);
                             System.out.println("temp:\t" + paramValue);
+
                             forecastFromSmhi.setLatitude(latitude);
                             System.out.println("latitude:\t" + latitude);
+
                             forecastFromSmhi.setLongitude(longitude);
                             System.out.println("longitude:\t" + longitude);
+
                             forecastFromSmhi.setCreated(LocalDateTime.now());
                             System.out.println("created:\t" + forecastFromSmhi.getCreated());
+
                             forecastFromSmhi.setDataSource(DataSource.Smhi);
                             System.out.println("datasource:\t" + DataSource.Smhi);
 

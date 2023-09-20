@@ -49,6 +49,32 @@ public class ForecastController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/api/{dataSource}/forecasts")
+    public ResponseEntity<List<ForecastListDTO>> getForecastsByDataSource(@PathVariable DataSource dataSource) {
+        List<Forecast> forecasts = forecastService.getForecasts();
+
+        // Filter forecasts by the specified data source
+        List<Forecast> filteredForecasts = forecasts.stream()
+                .filter(forecast -> forecast.getDataSource() == dataSource)
+                .collect(Collectors.toList());
+
+        if (filteredForecasts.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<ForecastListDTO> forecastListDTOs = filteredForecasts.stream().map(forecast -> {
+            var forecastListDTO = new ForecastListDTO();
+            forecastListDTO.Id = forecast.getId();
+            forecastListDTO.Date = forecast.getPredictionDate();
+            forecastListDTO.Hour = forecast.getPredictionHour();
+            forecastListDTO.Temperature = forecast.getPredictionTemperature();
+            forecastListDTO.dataSource = forecast.getDataSource();
+            return forecastListDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(forecastListDTOs);
+    }
+
 
     @PutMapping("/api/forecasts/{id}")
     public ResponseEntity<NewForecastDTO> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
@@ -58,19 +84,10 @@ public class ForecastController {
         forecast.setPredictionDate(newForecastDTO.getPredictionDate());
         forecast.setPredictionHour(newForecastDTO.getPredictionHour());
         forecast.setPredictionTemperature(newForecastDTO.getPredictionTemperature());
-        //forecast.setLastModifiedBy("Fredrik Nordfors");
         forecastService.update(forecast);
         return ResponseEntity.ok(newForecastDTO);
     }
 
-    /*
-    @PostMapping("/api/forecasts")
-    public ResponseEntity<Forecast> add( @RequestBody Forecast forecast) throws IOException{
-        forecast.setId(UUID.randomUUID());
-        forecastService.add(forecast);
-        return ResponseEntity.ok(forecast); // mer REST ful = created (204) samt url till produkten
-    }
-     */
 
     @PostMapping("/api/forecasts")
     public ResponseEntity<Forecast> newForecast(@RequestBody Forecast forecast) throws IOException {
@@ -134,17 +151,6 @@ public class ForecastController {
         if (averageList.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
-
-        // Calculate the average temperature
-        //double totalTemperature = filteredForecasts.stream()
-                //.mapToDouble(Forecast::getPredictionTemperature)
-                //.sum();
-
-        //double averageTemperature = totalTemperature / filteredForecasts.size();
-
-        //return ResponseEntity.ok(averageTemperature);
-
         Map<Integer, Double> sumOfAverageList = new HashMap<>();
         Map<Integer, Integer> hourCount = new HashMap<>();
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
@@ -165,14 +171,7 @@ public class ForecastController {
             hourlyAverageTemp.add(new AverageForecastDTO(hour, averageTemp));
         }
         return ResponseEntity.ok(hourlyAverageTemp);
-
-
     }
-
-
-
-
-
 
 /*
 
