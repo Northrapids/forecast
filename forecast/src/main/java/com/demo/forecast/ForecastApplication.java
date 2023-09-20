@@ -48,64 +48,46 @@ public class ForecastApplication  implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-		var objectMapper = new ObjectMapper();
+		//var objectMapper = new ObjectMapper();
 
 		var scan = new Scanner(System.in);
 
 		while(true){
 			System.out.println("******************* MENU *******************");
-			System.out.println("1. List all forecasts");
-			System.out.println("2. Create a new forecast");
-			System.out.println("3. Update a forecast");
-			System.out.println("4. Delete a forecast");
-			System.out.println("5. Auto generate forecasts");
-			System.out.println("6. fetch and save SMHI data to the database");
-			System.out.println("7. fetch and save Visual data to the database");
+			System.out.println(" 1. List all forecasts");
+			System.out.println(" 2. Create a new forecast");
+			System.out.println(" 3. Update a forecast");
+			System.out.println(" 4. Delete a forecast");
+			System.out.println(" 5. Auto generate forecasts");
+			System.out.println(" 6. fetch and save SMHI data to the database");
+			System.out.println(" 7. fetch and save Visual data to the database");
 			System.out.println("20. EXIT");
 			System.out.println("*********************************************");
 			System.out.print("Action:\t");
-
-
-			//System.out.println("8. Delete all forecasts form database!");
-			//System.out.println("9. Auto generate forecasts");
-			//System.out.println("10. fetch and save VISUAL data to the database");
-			//System.out.println("20. Exit");
-			//System.out.println("*********************************************");
-			//System.out.print("Action:\t");
 
 			int sel = scan.nextInt();
 			if(sel == 1){
 				listAllForecasts();
 			} else if(sel == 2){
 				createForecast(scan);
-			}else if(sel == 3){
+			} else if(sel == 3){
 				updateForecast(scan);
-			}else if(sel == 5){
-				//smhiData();
-				generateForecasts();
-			}else if(sel == 6){
-				//visualData();
-				//fetchAndSaveSmhiDataToDB();
-				smhiService.fetchAndSaveSmhiDataToDB();
-			}else if(sel == 7){
-				//fetchAndSaveVisualDataToDB();
-				visualService.fetchAndSaveVisualDataToDB();
-			}else if(sel == 8){
+			} else if(sel == 4){
 				deleteAllForecasts(scan);
-			}else if(sel == 9){
-				//addGeneratedPredictions(forecastService);
+			} else if(sel == 5){
 				generateForecasts();
-			}else if(sel == 10){
-				//fetchVisualAndSaveToDB();
-			}else if(sel == 11){
-				calculateAverage();
+			} else if(sel == 6){
+				smhiService.fetchAndSaveSmhiDataToDB();
+			} else if(sel == 7) {
+				visualService.fetchAndSaveVisualDataToDB();
 			} else if(sel == 20){
 				break;
+			} else if(sel == 9){
+				smhiData();
 			}
 		}
 	}
 
-/*
 	private void smhiData() throws IOException {
 
 		var objectMapper = new ObjectMapper();
@@ -159,407 +141,6 @@ public class ForecastApplication  implements CommandLineRunner {
 		}
 	}
 
- */
-
-	public void fetchAndSaveSmhiDataToDB() throws IOException {
-		var objectMapper = new ObjectMapper();
-
-		// Fetch weather forecast data from the SMHI API
-		SmhiRoot smhiRoot = objectMapper.readValue(new URL
-						("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
-				SmhiRoot.class);
-
-		System.out.println("+------------------------------------------------------------------------+");
-		System.out.println("approvedTime " + smhiRoot.getApprovedTime());
-		System.out.println("referenceTime " + smhiRoot.getReferenceTime());
-		System.out.println("Location: " + smhiRoot.getGeometry());
-		System.out.println("+------------------------------------------------------------------------+");
-
-		List<TimeSeries> timeseriesList = smhiRoot.getTimeSeries();
-
-		Date currentTime = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(currentTime);
-		calendar.add(Calendar.HOUR_OF_DAY, 25);
-		Date tomorrow = calendar.getTime();
-		for (TimeSeries timeSeries : timeseriesList) {
-			Date validTime = timeSeries.getValidTime();
-			calendar.setTime(validTime);
-			int hour = calendar.get(Calendar.HOUR_OF_DAY);
-			int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
-
-			LocalDate validLocalDate = validTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-			if (validTime.after(currentTime) && validTime.before(tomorrow) &&
-					hour == currentHour) {
-				for (Parameter param : timeSeries.getParameters()) {
-					String paraName = param.getName();
-					var forecastFromSmhi = new Forecast();
-					ArrayList<Float> values = param.getValues();
-
-					Boolean rainOrSnow = false;
-
-					double latitude = 1.0d;
-					double longitude = 1.0d;
-
-
-					for (Float paramValue : values) {
-						if ("t".equals(paraName) || "pcat".equals(paraName)) {
-							if (paramValue == 3.0 || paramValue == 1) {
-								rainOrSnow = true;
-							}
-						}
-
-                        Geometry geometry = smhiRoot.getGeometry();
-                        ArrayList<ArrayList<Double>> coordinates = geometry.getCoordinates();
-                        for(ArrayList<Double> coordinate : coordinates) {
-                            latitude = coordinate.get(1);
-                            longitude = coordinate.get(0);
-                        }
-
-						if ("t".equals(paraName)) {
-
-							System.out.println("----------------------------");
-							System.out.println("date:\t" + validLocalDate);
-							System.out.println("hour:\t" + hour);
-							System.out.println("temp:\t" + paramValue);
-							System.out.println("rain or snow:\t" + rainOrSnow);
-
-							forecastFromSmhi.setId(UUID.randomUUID());
-							forecastFromSmhi.setRainOrSnow(rainOrSnow);
-							forecastFromSmhi.setPredictionTemperature(paramValue);
-							forecastFromSmhi.setPredictionDate(validLocalDate);
-							forecastFromSmhi.setPredictionHour(hour);
-							forecastFromSmhi.setDataSource(DataSource.Smhi);
-							forecastFromSmhi.setCreated(LocalDateTime.now());
-							forecastFromSmhi.setLatitude(latitude);
-							forecastFromSmhi.setLongitude(longitude);
-							forecastRepository.save(forecastFromSmhi);
-
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-	private void fetchAndSaveVisualDataToDB() throws IOException {
-		var objectMapper = new ObjectMapper();
-
-		// Fetch weather forecast data from the visual API
-        /*
-		VisualRoot visualRoot = objectMapper.readValue(new URL
-						("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Liljeholmen/next24hours?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Cname%2Caddress%2CresolvedAddress%2Clatitude%2Clongitude%2Ctemp%2Cprecip%2Cprecipprob%2Cprecipcover%2Cpreciptype%2Csnow%2Csnowdepth&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
-				VisualRoot.class);
-
-         */
-        VisualRoot visualRoot = objectMapper.readValue(new URL
-                ("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/liljeholmen/next24hours?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cprecipprob%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
-				VisualRoot.class);
-
-		long currentTimestamp = System.currentTimeMillis() / 1000;
-
-		for (Day day : visualRoot.getDays()) {
-
-
-			for (Hour time : day.getHours()) {
-
-
-				long hourDatetimeEpoch = time.getDatetimeEpoch();
-
-				// Check if the timestamp is within the next 24 hours
-				if (hourDatetimeEpoch >= currentTimestamp && hourDatetimeEpoch <= currentTimestamp + 25 * 3600) {
-					String hourDatetime = time.getDatetime();
-					double hourTemp = time.getTemp();
-					System.out.println("-----------------------------");
-
-					System.out.println("Date:\t" + day.getDatetime());
-					System.out.println("Address:\t" + visualRoot.getAddress());
-					System.out.println("Timezone:\t" + visualRoot.getTimezone());
-					System.out.println("Hour:\t" + hourDatetime);
-					System.out.println("Temp:\t" + hourTemp);
-					//System.out.println("Rain:\t" + day.getPrecip());
-					//System.out.println("Snow:\t" + day.getSnow());
-
-
-					Forecast visualForecast = new Forecast();
-
-
-					Calendar calendar = Calendar.getInstance();
-
-					int hour = calendar.get(Calendar.HOUR_OF_DAY);
-					visualForecast.setPredictionHour(hour); // set hour in database
-					// Now, you can use `hour` as an integer if needed elsewhere
-
-					DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // Adjust the pattern as needed
-					LocalDate parsedDate = LocalDate.parse(day.getDatetime(), dateFormatter);
-
-					double visualLatitude =  visualRoot.getLatitude();
-					double visualLongitude=  visualRoot.getLongitude();
-
-					if (time.getPrecip() > 0) {
-						visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-						//System.out.println("Saved - Precipitation: Rain");
-						System.out.println("Precipitation: Rain");
-					} else if (time.getSnow() > 0) {
-						visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-						//System.out.println("Saved - Precipitation: Snow");
-						System.out.println("Precipitation: Snow");
-					} else {
-						visualForecast.setRainOrSnow(false); // No precipitation
-						//System.out.println("Saved - Precipitation: None");
-						System.out.println("Precipitation: None");
-					}
-
-					visualForecast.setPredictionDate(parsedDate);
-					visualForecast.setPredictionTemperature(hourTemp);
-					visualForecast.setCreated(LocalDateTime.now());
-					visualForecast.setLongitude(visualLongitude);
-					visualForecast.setLatitude(visualLatitude);
-                    visualForecast.setDataSource(DataSource.Visual);
-					//visualForecast.setDataSource(DataSource.Visual);
-
-
-					forecastRepository.save(visualForecast);
-
-				}
-			}
-		}
-		System.out.println("\n**************** COMPLETED! ****************\n");
-
-
-        /*
-
-		System.out.println("+------------------------------------------------------------------------+");
-		System.out.println("Latitude: " + visualRoot.getLatitude());
-		System.out.println("Longitude: " + visualRoot.getLongitude());
-		System.out.println("Address: " + visualRoot.getAddress());
-		System.out.println("+------------------------------------------------------------------------+");
-
-		long currentTimeMillis = System.currentTimeMillis();
-		long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
-
-		for (Day day : visualRoot.getDays()) {
-			Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
-
-			if (dayInstant.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-				System.out.println("Date: " + day.getDatetime());
-				System.out.println("Temp: " + day.getTemp());
-				System.out.println("Snow: " + day.getSnow());
-				System.out.println("Precipitation Types: " + day.getPreciptype());
-				System.out.println("+----------------------------------------------------+");
-
-				for (Hour hour : day.getHours()) {
-					Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
-
-					if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-						System.out.println("Hour: " + hour.getDatetime());
-						System.out.println("Temp: " + hour.getTemp());
-						System.out.println("Snow: " + hour.getSnow());
-						System.out.println("Precipitation Types: " + hour.getPreciptype());
-						System.out.println("+----------------------------------------------------+");
-					}
-
-					//Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
-
-					Forecast visualForecast = new Forecast();
-
-					Calendar calendar = Calendar.getInstance();
-
-					int hour = calendar.get(Calendar.HOUR_OF_DAY);
-
-					visualForecast.setPredictionHour(hour);
-
-					DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-					LocalDate paresdate = LocalDate.parse(day.getDat)
-				}
-			}
-		}
-		*/
-
-	}
-
-    /*
-    public void fetchVisualAndSaveToDB() throws IOException {
-        var objectMapper = new ObjectMapper();
-
-        // Fetch weather forecast data from the Visual Crossing API
-        VisualRoot visualRoot = objectMapper.readValue(new URL(
-                        "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Liljeholmstorget%207%2C%20117%2063%20Stockholm/2023-08-31/2024-08-31?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
-                VisualRoot.class);
-
-        long currentTimeMillis = System.currentTimeMillis();
-        long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
-
-        for (Day day : visualRoot.getDays()) {
-            Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
-
-            if (dayInstant.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-                for (Hour hour : day.getHours()) {
-                    Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
-                    LocalDateTime dayDateTime = LocalDateTime.parse(day.getDatetime());
-                    LocalDateTime hourDateTime = LocalDateTime.parse(hour.getDatetime());
-
-                    if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-                        // Create a new forecast and populate it with data from the Visual Crossing API
-                        Forecast forecastFromVisual = new Forecast();
-                        forecastFromVisual.setId(UUID.randomUUID());
-                        forecastFromVisual.setPredictionTemperature(hour.getTemp());
-                        //forecastFromVisual.setRainOrSnow("Snow".equalsIgnoreCase(hour.getPreciptype()));
-                        forecastFromVisual.setPredictionDate(dayDateTime.toLocalDate());
-                        forecastFromVisual.setPredictionHour(hourDateTime.getHour());
-                        forecastFromVisual.setDataSource(DataSource.Visual);
-                        forecastFromVisual.setCreated(LocalDateTime.now());
-                        forecastFromVisual.setLatitude(visualRoot.getLatitude());
-                        forecastFromVisual.setLongitude(visualRoot.getLongitude());
-
-                        // Save the forecast to the database
-                        forecastRepository.save(forecastFromVisual);
-
-                        // Print forecast details (optional)
-                        //System.out.println("Date: " + day.getDatetime());
-                        //System.out.println("Hour: " + hour.getDatetime());
-                        //System.out.println("Temperature: " + hour.getTemp());
-                        //System.out.println("Precipitation Type: " + hour.getPreciptype());
-                        //System.out.println("Snow: " + hour.getSnow());
-                        //System.out.println("+----------------------------------------------------+");
-                    }
-                }
-            }
-        }
-    }
-
-     */
-    /*
-	public void fetchVisualAndSaveToDB() throws IOException {
-		var objectMapper = new ObjectMapper();
-
-		// Fetch weather forecast data from the Visual Crossing API
-		VisualRoot visualRoot = objectMapper.readValue(new URL(
-						"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Liljeholmstorget%207%2C%20117%2063%20Stockholm/2023-08-31/2024-08-31?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
-				VisualRoot.class);
-
-		System.out.println("+------------------------------------------------------------------------+");
-		System.out.println("Latitude: " + visualRoot.getLatitude());
-		System.out.println("Longitude: " + visualRoot.getLongitude());
-		System.out.println("Address: " + visualRoot.getAddress());
-		System.out.println("+------------------------------------------------------------------------+");
-
-		long currentTimeMillis = System.currentTimeMillis();
-		long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
-
-		for (Day day : visualRoot.getDays()) {
-
-			for (Hour hour : day.getHours()) {
-				long
-				if (day.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-					System.out.println("Date: " + day.getDatetime());
-					System.out.println("Temp: " + day.getTemp());
-					System.out.println("Snow: " + day.getSnow());
-					System.out.println("Precipitation Types: " + day.getPreciptype());
-					System.out.println("+----------------------------------------------------+");
-
-					for (Hour hour : day.getHours()) {
-						Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
-
-						if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-							System.out.println("Hour: " + hour.getDatetime());
-							System.out.println("Temp: " + hour.getTemp());
-							System.out.println("Snow: " + hour.getSnow());
-							System.out.println("Precipitation Types: " + hour.getPreciptype());
-							System.out.println("+----------------------------------------------------+");
-						}
-					}
-				}
-			}
-			Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
-
-			Forecast visualForecast = new Forecast();
-
-			Calendar calendar = Calendar.getInstance();
-
-			int hour = calendar.get(Calendar.HOUR_OF_DAY);
-
-			visualForecast.setPredictionHour(hour);
-
-			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate paresdate = LocalDate.parse(day.getDat)
-
-			if (dayInstant.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-				System.out.println("Date: " + day.getDatetime());
-				System.out.println("Temp: " + day.getTemp());
-				System.out.println("Snow: " + day.getSnow());
-				System.out.println("Precipitation Types: " + day.getPreciptype());
-				System.out.println("+----------------------------------------------------+");
-
-				for (Hour hour : day.getHours()) {
-					Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
-
-					if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= currentTimeMillis + twentyFourHoursInMillis) {
-						System.out.println("Hour: " + hour.getDatetime());
-						System.out.println("Temp: " + hour.getTemp());
-						System.out.println("Snow: " + hour.getSnow());
-						System.out.println("Precipitation Types: " + hour.getPreciptype());
-						System.out.println("+----------------------------------------------------+");
-					}
-				}
-			}
-		}
-
-	 */
-
-
-	// Create a Calendar instance and set it to the current time
-        /*
-		Calendar calendar = Calendar.getInstance();
-		long currentTimeMillis = System.currentTimeMillis();
-		calendar.setTimeInMillis(currentTimeMillis);
-
-		// Calculate tomorrow's date and time using Calendar
-		calendar.add(Calendar.DAY_OF_YEAR, 1);
-		long tomorrowMillis = calendar.getTimeInMillis();
-		*/
-
-    /*
-
-		// Iterate over the data and save forecasts
-		for (Day day : visualRoot.getDays()) {
-			Instant dayInstant = Instant.ofEpochSecond(day.getDatetimeEpoch());
-
-
-			if (dayInstant.toEpochMilli() >= currentTimeMillis && dayInstant.toEpochMilli() <= tomorrowMillis) {
-				for (Hour hour : day.getHours()) {
-					Instant hourInstant = Instant.ofEpochSecond(hour.getDatetimeEpoch());
-					LocalDateTime dayDateTime = LocalDateTime.parse(day.getDatetime());
-					String dateStr = day.getDatetime();
-					LocalDate validLocalDate = LocalDate.parse(dateStr);
-					//LocalDateTime hourDateTime = LocalDateTime.parse(hour.getDatetime());
-
-					if (hourInstant.toEpochMilli() >= currentTimeMillis && hourInstant.toEpochMilli() <= tomorrowMillis) {
-						// Create a new forecast and populate it with data from the Visual Crossing API
-						Forecast forecastFromVisual = new Forecast();
-						forecastFromVisual.setId(UUID.randomUUID());
-						forecastFromVisual.setPredictionTemperature(hour.getTemp());
-						//forecastFromVisual.setRainOrSnow("Snow".equalsIgnoreCase(hour.getPreciptype()));
-						//forecastFromVisual.setPredictionDate(day.getDatetime().toLocalDate());
-						forecastFromVisual.setPredictionDate(validLocalDate);
-						forecastFromVisual.setPredictionHour(hourInstant.atZone(ZoneId.systemDefault()).toLocalTime().getHour());
-						forecastFromVisual.setDataSource(DataSource.Visual);
-						forecastFromVisual.setCreated(LocalDateTime.now());
-						forecastFromVisual.setLatitude(visualRoot.getLatitude());
-						forecastFromVisual.setLongitude(visualRoot.getLongitude());
-
-						// Save the forecast to the database
-						forecastRepository.save(forecastFromVisual);
-
-					}
-				}
-			}
-		}
-	}
-
-	 */
 
 	private void updateForecast(Scanner scan) throws IOException {
 		if (forecastService.getForecasts().isEmpty()) {
@@ -569,7 +150,7 @@ public class ForecastApplication  implements CommandLineRunner {
 
 		listAllForecasts();
 		System.out.println("\n------------------------------");
-		System.out.printf("Ange vilken du vill uppdatera:\t");
+		System.out.printf("Enter which one you want to update:\t");
 		int num = scan.nextInt() ;
 		var forecast = forecastService.getByIndex(num-1);
 		System.out.println("-------------------------------------------------");
@@ -580,7 +161,7 @@ public class ForecastApplication  implements CommandLineRunner {
 				forecast.getPredictionTemperature()
 		);
 		System.out.println("-------------------------------------------------");
-		System.out.printf("Ange ny temp:\t");
+		System.out.printf("Enter a new temperature:\t");
 		double temp = scan.nextDouble() ;
 		forecast.setPredictionTemperature(temp);
 		forecastService.update(forecast);
@@ -597,49 +178,31 @@ public class ForecastApplication  implements CommandLineRunner {
 
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-		//System.out.printf("Date (yyyy-mm-dd):\t");
 		LocalDate date = null;
-		boolean validDate = false;
-		while (!validDate) {
+		int hour = 0;
+		double temp = 0;
+		boolean isRainOrSnow = false;
+
+		boolean validInput = false;
+
+		while (!validInput) {
 			try {
 				System.out.println("Date (yyyy-MM-dd):\t");
 				String dateInput = scan.next();
-
 				date = LocalDate.parse(dateInput,dateFormatter);
-				validDate = true;
-			} catch (Exception e) {
-				System.out.println("Invalid input!");
-				scan.next();
-			}
-		}
-		//String date = scan.next();
-		//DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		//LocalDate dateFormatted = LocalDate.parse(date,dateFormatter);
 
-		System.out.print("Hour:\t");
-		int hour = 0;
-		boolean validHour = false;
-		while(!validHour) {
-			try {
+				System.out.print("Hour:\t");
 				hour = scan.nextInt();
-				validHour = true;
-			} catch (Exception e){
-				System.out.println("Invalid input!");
-				scan.next();
-			}
-		}
 
-		System.out.print("Temperature:\t");
-		double temp = 0;
-		//Double temp = scan.nextDouble();
-		boolean validTemperature = false;
-		while (!validTemperature) {
-			try {
+				System.out.print("Temperature:\t");
 				temp = scan.nextDouble();
-				validTemperature = true;
+
+				System.out.println("Is it raining or snowing (true/false");
+				isRainOrSnow = scan.nextBoolean();
+
+				validInput = true;
 			} catch (Exception e) {
 				System.out.println("Invalid input!");
-				scan.next();
 			}
 		}
 
@@ -650,8 +213,9 @@ public class ForecastApplication  implements CommandLineRunner {
 		forecast.setPredictionHour(hour);
 		forecast.setPredictionTemperature(temp);
 		forecast.setDataSource(DataSource.Console);
-		forecast.setLatitude(Double.parseDouble(latitude));
-		forecast.setLongitude(Double.parseDouble(longitude));
+		forecast.setLatitude(Float.parseFloat(latitude));
+		forecast.setLongitude(Float.parseFloat(longitude));
+		forecast.setRainOrSnow(isRainOrSnow);
 		forecastService.create(forecast);
 
 		System.out.println("*** FORECAST PREDICTION CREATED! ***");
@@ -681,11 +245,11 @@ public class ForecastApplication  implements CommandLineRunner {
 			forecast.setPredictionDate(predictionDate.toLocalDate());
 			forecast.setPredictionHour(predictionHour);
 			forecast.setPredictionTemperature(predictionTemp);
+			forecast.setLatitude(Float.parseFloat(latitude));
+			forecast.setLongitude(Float.parseFloat(longitude));
 			forecast.setRainOrSnow(rainOrSnow);
 			forecast.setDataSource(DataSource.ConsoleAutoGenerated);
 			forecastService.create(forecast);
-
-
 		}
 		System.out.println("*** GENERATED FORECAST PREDICTIONS CREATED! ***");
 	}
@@ -701,7 +265,6 @@ public class ForecastApplication  implements CommandLineRunner {
 
 		int num = 1;
 
-		//for(var forecast : forecastService.getForecasts()){
 		for (var forecast : forecasts) {
 
 			System.out.printf("(%d) Created: %s, Updated: %s, Longitude: %f, Latitude: %f, Prediction Date: %s, Prediction Hour: %d, Temperature: %f, Rain/Snow: %b, Data Source: %s%n",
@@ -719,11 +282,6 @@ public class ForecastApplication  implements CommandLineRunner {
 			num++;
 		}
 
-	}
-
-	private void calculateAverage() {
-		//var day = LocalDate.now();
-		//List<AverageForecastDTO> dtos = forecastService.calculateAverage(day);
 	}
 
 	private void deleteAllForecasts(Scanner scan){

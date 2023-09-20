@@ -6,8 +6,8 @@ import java.util.ArrayList;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VisualRoot {
     public int queryCost;
-    public double latitude;
-    public double longitude;
+    public float latitude;
+    public float longitude;
     public String resolvedAddress;
     public String address;
     public String timezone;
@@ -24,19 +24,19 @@ public class VisualRoot {
         this.queryCost = queryCost;
     }
 
-    public double getLatitude() {
+    public float getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public float getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
 

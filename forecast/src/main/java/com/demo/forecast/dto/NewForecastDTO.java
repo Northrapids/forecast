@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class NewForecastDTO { // Data transfer object
 
-    private LocalDate predictionDate; //20230821
+    private LocalDate predictionDate;
     private int predictionHour;
 
     private double predictionTemperature;

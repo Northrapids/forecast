@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class ForecastListDTO {
     public UUID Id;
-    public LocalDate Date; //20230821
+    public LocalDate Date;
     public int Hour;
     public double Temperature;
     public DataSource dataSource; // API provider

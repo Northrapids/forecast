@@ -19,8 +19,8 @@ public class Forecast {
     private UUID id;
     private LocalDateTime created;
     private LocalDateTime updated;
-    private double longitude;
-    private double latitude;
+    private float longitude;
+    private float latitude;
     private LocalDate predictionDate;
     private int predictionHour; //8
     private double predictionTemperature;
@@ -64,7 +64,7 @@ public class Forecast {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
 
@@ -72,7 +72,7 @@ public class Forecast {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 

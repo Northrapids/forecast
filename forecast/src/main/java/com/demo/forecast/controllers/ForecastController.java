@@ -53,10 +53,8 @@ public class ForecastController {
     @PutMapping("/api/forecasts/{id}")
     public ResponseEntity<NewForecastDTO> update(@PathVariable UUID id, @RequestBody NewForecastDTO newForecastDTO) throws IOException {
 
-        // mappa från dto -> entitet
-        //var forecast = new Forecast();
         var forecast = forecastService.get(id).get(); // hämta objektet från databas = Alla properties sätts
-        //forecast.setId(id);
+
         forecast.setPredictionDate(newForecastDTO.getPredictionDate());
         forecast.setPredictionHour(newForecastDTO.getPredictionHour());
         forecast.setPredictionTemperature(newForecastDTO.getPredictionTemperature());
@@ -97,7 +95,7 @@ public class ForecastController {
         if (averageList.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Map<Integer, Double> sumOfAverageList = new HashMap<>(); // än
+        Map<Integer, Double> sumOfAverageList = new HashMap<>();
         Map<Integer, Integer> hourCount = new HashMap<>();
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
 
@@ -147,7 +145,7 @@ public class ForecastController {
 
         //return ResponseEntity.ok(averageTemperature);
 
-        Map<Integer, Double> sumOfAverageList = new HashMap<>(); // än
+        Map<Integer, Double> sumOfAverageList = new HashMap<>();
         Map<Integer, Integer> hourCount = new HashMap<>();
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
 

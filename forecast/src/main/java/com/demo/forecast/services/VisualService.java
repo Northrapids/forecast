@@ -64,8 +64,6 @@ public class VisualService {
                     Forecast visualForecast = new Forecast();
 
 
-                    //Calendar calendar = Calendar.getInstance();
-
                     String datetimeString = time.getDatetime();
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
@@ -82,31 +80,20 @@ public class VisualService {
                         e.printStackTrace();
                     }
 
-                    //int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    //visualForecast.setPredictionHour(hour); // set hour in database
-                    // Now, you can use `hour` as an integer if needed elsewhere
-
-                    //int hour = LocalDateTime.parse(hourDatetime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).getHour();
-                    //visualForecast.setPredictionHour(hour); // set hour based on hourDatetime
-
-
                     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // Adjust the pattern as needed
                     LocalDate parsedDate = LocalDate.parse(day.getDatetime(), dateFormatter);
 
-                    double visualLatitude =  visualRoot.getLatitude();
-                    double visualLongitude=  visualRoot.getLongitude();
+                    float visualLatitude = visualRoot.getLatitude();
+                    float visualLongitude= visualRoot.getLongitude();
 
                     if (time.getPrecip() > 0) {
-                        visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-                        //System.out.println("Saved - Precipitation: Rain");
+                        visualForecast.setRainOrSnow(true);
                         System.out.println("Precipitation: Rain");
                     } else if (time.getSnow() > 0) {
-                        visualForecast.setRainOrSnow(true); // You can customize this based on your requirements
-                        //System.out.println("Saved - Precipitation: Snow");
+                        visualForecast.setRainOrSnow(true);
                         System.out.println("Precipitation: Snow");
                     } else {
-                        visualForecast.setRainOrSnow(false); // No precipitation
-                        //System.out.println("Saved - Precipitation: None");
+                        visualForecast.setRainOrSnow(false);
                         System.out.println("Precipitation: None");
                     }
 
@@ -117,8 +104,6 @@ public class VisualService {
                     visualForecast.setLongitude(visualLongitude);
                     visualForecast.setLatitude(visualLatitude);
                     visualForecast.setDataSource(DataSource.Visual);
-                    //visualForecast.setDataSource(DataSource.Visual);
-
 
                     forecastRepository.save(visualForecast);
 

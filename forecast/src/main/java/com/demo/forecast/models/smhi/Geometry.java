@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Geometry {
 
     private String type;
-    private ArrayList<ArrayList<Double>> coordinates;
+    private ArrayList<ArrayList<Float>> coordinates;
 
     private String getType() {
         return type;
@@ -19,11 +19,11 @@ public class Geometry {
         this.type = type;
     }
 
-    public ArrayList<ArrayList<Double>> getCoordinates() {
+    public ArrayList<ArrayList<Float>> getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(ArrayList<ArrayList<Double>> coordinates) {
+    public void setCoordinates(ArrayList<ArrayList<Float>> coordinates) {
         this.coordinates = coordinates;
     }
 
