@@ -55,7 +55,17 @@ public class ForecastApplication  implements CommandLineRunner {
 		while(true){
 			menu();
 
-			int sel = scan.nextInt();
+			//int sel = scan.nextInt();
+
+			int sel;
+			try {
+				sel = scan.nextInt();
+			} catch (java.util.InputMismatchException e) {
+				System.out.println("Invalid input. Please enter a valid number.");
+				scan.nextLine(); // Clear the input buffer
+				continue; // Restart the loop
+			}
+
 			if(sel == 1){
 				listAllForecasts();
 			} else if(sel == 2){
@@ -74,6 +84,8 @@ public class ForecastApplication  implements CommandLineRunner {
 				deleteAllForecasts(scan);
 			} else if(sel == 20){
 				break;
+			} else {
+				System.out.println("Invalid input!");
 			}
 		}
 	}
@@ -93,7 +105,6 @@ public class ForecastApplication  implements CommandLineRunner {
 		System.out.print("Action:\t");
 	}
 
-
 	private void updateForecast(Scanner scan) throws IOException {
 		if (forecastService.getForecasts().isEmpty()) {
 			System.out.println("\nThere are no forecasts to update!\n");
@@ -103,30 +114,60 @@ public class ForecastApplication  implements CommandLineRunner {
 		listAllForecasts();
 		System.out.println("\n------------------------------");
 		System.out.printf("Enter which one you want to update:\t");
-		int num = scan.nextInt() ;
-		var forecast = forecastService.getByIndex(num-1);
-		System.out.println("-------------------------------------------------");
-		System.out.printf("INDEX: %d ID:%s DATE: %s HOUR: %d CURRENT TEMP: %f %n",
-				num,
-				forecast.getId(),
-				forecast.getPredictionDate(),
-				forecast.getPredictionHour(),
-				forecast.getPredictionTemperature()
-		);
-		System.out.println("-------------------------------------------------");
-		System.out.printf("Enter a new temperature:\t");
-		double temp = scan.nextDouble() ;
-		forecast.setPredictionTemperature(temp);
-		forecastService.update(forecast);
+
+		int num;
+
+		try {
+			num = scan.nextInt();
+		} catch (java.util.InputMismatchException e) {
+			System.out.println("Invalid input! Please enter a valid number.");
+			scan.nextLine(); // Clear the input buffer
+			return;
+		}
+
+		try {
+			var forecast = forecastService.getByIndex(num - 1);
+			System.out.println("-------------------------------------------------");
+			System.out.printf("INDEX: %d ID:%s DATE: %s HOUR: %d CURRENT TEMP: %f %n",
+					num,
+					forecast.getId(),
+					forecast.getPredictionDate(),
+					forecast.getPredictionHour(),
+					forecast.getPredictionTemperature()
+			);
+			System.out.println("-------------------------------------------------");
+			System.out.printf("Enter a new temperature:\t");
+
+			double temp = scan.nextDouble();
+			forecast.setPredictionTemperature(temp);
+			forecastService.update(forecast);
+		} catch (IndexOutOfBoundsException e) {
+			System.out.println("Invalid index! Please select a valid forecast to update.");
+		} catch (java.util.InputMismatchException e) {
+			System.out.println("Invalid input! Please enter a valid temperature.");
+		}
 	}
+
 
 	private void deleteForecastById(Scanner scan) {
 		listAllForecasts();
 		System.out.print("Enter the ID of the forecast to delete: ");
-		UUID id = UUID.fromString(scan.next());
 
-		forecastService.delete(id);
-		System.out.println("Forecast with ID " + id + " has been deleted.");
+		UUID id;
+
+		try {
+			id = UUID.fromString(scan.next());
+		} catch (IllegalArgumentException e) {
+			System.out.println("Invalid ID format! Please enter a valid UUID.");
+			return;
+		}
+
+		try {
+			forecastService.delete(id);
+			System.out.println("Forecast with ID " + id + " has been deleted.");
+		} catch (Exception e) {
+			System.out.println("An error occurred while deleting the forecast.");
+		}
 	}
 
 
@@ -247,23 +288,33 @@ public class ForecastApplication  implements CommandLineRunner {
 
 	}
 
-	private void deleteAllForecasts(Scanner scan){
-		//forecastRepository.deleteAll();
+
+	private void deleteAllForecasts(Scanner scan) {
 		System.out.println("Are you sure you want to delete all forecasts? (Y/N)");
 		System.out.printf("Action:\t");
-		String confirmation = scan.next().toLowerCase();
+		String confirmation;
+
+		try {
+			confirmation = scan.next().toLowerCase();
+		} catch (java.util.InputMismatchException e) {
+			System.out.println("Invalid input format! Please enter 'Y' or 'N'.");
+			scan.nextLine(); // Clear the input buffer
+			return;
+		}
 
 		if (confirmation.equals("y")) {
-			forecastRepository.deleteAll();
-			System.out.println("All forecasts have been deleted.");
+			// Add try-catch block here to handle potential exceptions when deleting forecasts
+			try {
+				forecastRepository.deleteAll();
+				System.out.println("All forecasts have been deleted.");
+			} catch (Exception e) {
+				System.out.println("An error occurred while deleting forecasts.");
+			}
 		} else if (confirmation.equals("n")) {
 			System.out.println("Deletion canceled. No forecasts were deleted.");
 		} else {
 			System.out.println("Invalid input. Deletion canceled. No forecasts were deleted.");
 		}
 	}
-
-
-
 
 }

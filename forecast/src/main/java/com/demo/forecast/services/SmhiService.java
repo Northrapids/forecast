@@ -30,9 +30,9 @@ public class SmhiService {
         var objectMapper = new ObjectMapper();
 
         // Fetch weather forecast data from the SMHI API
-        SmhiRoot smhiRoot = objectMapper.readValue(new URL
-                        ("https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json"),
-                SmhiRoot.class);
+        String url = "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/18/lat/59/data.json";
+        SmhiRoot smhiRoot = objectMapper.readValue(new URL(url), SmhiRoot.class);
+
 
         System.out.println("+------------------------------------------------------------------------+");
         System.out.println("approvedTime " + smhiRoot.getApprovedTime());

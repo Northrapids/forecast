@@ -2,6 +2,7 @@ package com.demo.forecast.services;
 
 import com.demo.forecast.models.DataSource;
 import com.demo.forecast.models.Forecast;
+import com.demo.forecast.models.smhi.SmhiRoot;
 import com.demo.forecast.models.visual.Day;
 import com.demo.forecast.models.visual.Hour;
 import com.demo.forecast.models.visual.VisualRoot;
@@ -30,10 +31,10 @@ public class VisualService {
         var objectMapper = new ObjectMapper();
 
         // Fetch weather forecast data from the visual API
+        String url = ("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/liljeholmen/next24hours?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cprecipprob%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json");
+        VisualRoot visualRoot = objectMapper.readValue(new URL(url), VisualRoot.class);
 
-        VisualRoot visualRoot = objectMapper.readValue(new URL
-                        ("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/liljeholmen/next24hours?unitGroup=metric&elements=datetime%2CdatetimeEpoch%2Ctemp%2Cprecipprob%2Cpreciptype%2Csnow&key=NV2YVV3CH289TE5AKK9MECDUY&contentType=json"),
-                VisualRoot.class);
+
 
         long currentTimestamp = System.currentTimeMillis() / 1000;
 
